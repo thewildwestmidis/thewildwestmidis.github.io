@@ -1,0 +1,209 @@
+/* Estilos para el encabezado */
+header {
+    text-align: center;
+    background-color: #41464d;
+    color: white;
+    border: 3px solid #474b4e;
+    border-radius: 30px;
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+body {
+    background-color: #35393e;
+    color: #ffffff;
+    font-family: Arial, sans-serif; /* Puedes cambiar "Arial" por la fuente que prefieras */
+    /* Otros estilos para elementos en modo oscuro */
+}
+
+h1, h2 {
+    font-family: 'Trebuchet MS', sans-serif; /* Puedes cambiar "Times New Roman" por la fuente que prefieras */
+}
+
+/* Estilos para el formulario de búsqueda */
+#search-form {
+    margin: 20px auto;
+    text-align: center;
+    border-radius: 10px;
+}
+
+#search-input {
+    padding: 7.5px;
+    width: 70%;
+    border-radius: 10px;
+    background-color: #424549;
+    color: rgb(255, 255, 255);
+    border: 0px solid #ddd;
+}
+
+#search-form button {
+    padding: 7.5px 15px;
+    background-color: #4f5155;
+    color: rgb(255, 255, 255);
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+#search-form button:hover{
+    background-color: #5a5e64;
+}
+
+/* Agrega estilos a los resultados de búsqueda */
+#file-list li {
+    margin: 10px;
+    padding: 15px;
+    border-radius: 20px;
+    background-color: #424549; /* Cambia este color al que desees */
+    border: 3px solid #474b4e;
+    justify-content: space-around;
+    align-items: auto;
+    text-align: auto;
+    list-style-position: inside;
+    display: flex;
+    justify-content: space-between;
+}
+
+.copy-button {
+    padding: 5px 10px;
+    background-color: #4f5155;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: auto;
+}
+
+.copy-button:hover{
+    background-color: #5a5e64;
+}
+.play-button {
+    padding: 5px 10px;
+    background-color: rgb(77, 110, 94);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.play-button:hover{
+    background-color: rgb(81, 131, 107);
+}
+
+.play-button-loading {
+    background-color: rgb(117, 135, 85);
+}
+.play-button-loading:hover {
+    background-color: rgb(126, 146, 90);
+}
+
+
+
+.stop-button {
+    padding: 5px 10px;
+    background-color: rgb(179, 84, 77);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.stop-button:hover{
+    background-color: rgb(146, 71, 67);
+}
+
+/* Estilos para el enlace de descarga copiados */
+.alert-message {
+    background-color: #f0f0f0;
+    padding: 10px;
+    text-align: center;
+    display: none;
+}
+
+.back-button {
+    padding: 5px 10px;
+    background-color: #4f5155;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    width: 5%;
+}
+
+.back-button:hover{
+    background-color: #5a5e64;
+}
+
+.the-iframe{
+    padding: 5px 10px;
+    background-color: white;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.request-button{
+    padding: 1% 10px;
+    background-color: #4f5155;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    width: 20%;
+    height: 10%;
+}
+
+.request-button:hover{
+    background-color: #5a5e64;
+}
+
+.favorite-button {
+    padding: 5px 10px;
+    background-color: #7e8763;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.favorite-button:hover {
+    background-color: #a1b170;
+}
+
+.remove-favorite-button {
+    padding: 5px 10px;
+    background-color: #755250;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.remove-favorite-button:hover {
+    background-color: #653836;
+}
+
+.midiname {
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+
+.midinamef {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.duration {
+    font-size: 15px;
+    color: #a7aaad;
+    margin-top: 0px;
+    margin-top: 0px;
+    margin-bottom: 5px;
+}

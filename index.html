@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <title>The Wild West Midis</title>
+    <link rel="icon" type="png" href="Icon_trumpet_tww.png">
+    <meta name="description"
+        content="The best midi list for the wild west! 200+ Midis, a search bar and a favorites section!">
+
+    <meta content="The Wild West Midis - 200+ Midis!" property="og:title" />
+    <meta content="The best midi list for the wild west! 200+ Midis, a search bar and a favorites section!"
+        property="og:description" />
+    <meta content="https://bertogim.github.io/The-Wild-West-Midis" property="og:url" />
+    <meta content="https://raw.githubusercontent.com/Bertogim/The-Wild-West-Midis/main/Icon_trumpet_tww.png"
+        property="og:image" />
+    <meta name="theme-color" content="#FFFF00">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TVB1MLE2Z"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-4TVB1MLE2Z');
+    </script>
+
+<script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.4.0"></script>
+</head>
+
+<body>
+
+    <header>
+        <div style="display: flex; justify-content: left; gap: 20px;">
+            <h2 style="margin: 0;"></h2>The Wild West Midis</h2>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="https://bertogim.github.io/The-Wild-West-Midis/tutorial"
+                    style="color: inherit; text-decoration: underline;">How to play music</a>
+            </p>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="https://bertogim.github.io/The-Wild-West-Midis/request" target=""
+                    style="color: inherit; text-decoration: underline;">Request Midis</a>
+            </p>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="https://bertogim.github.io/The-Wild-West-Midis/favorites" target=""
+                    style="color: inherit; text-decoration: underline;">Your Favorites</a>
+            </p>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="https://bertogim.github.io/The-Wild-West-Midis/about" target=""
+                    style="color: inherit; text-decoration: underline;">About</a>
+            </p>
+        </div>
+    </header>
+    <center>
+        <h1>The Wild West Midis</h1>
+        <h3>The best midi list for the wild west! 200+ Midis</h3>
+        <p>The wild west midis by Bertogim</p>
+    </center>
+
+
+    <form id="search-form">
+        <input type="text" id="search-input" placeholder="Search Midis">
+        <button type="submit">Search</button>
+    </form>
+    <ul id="file-list">
+        <!-- Los resultados de búsqueda se mostrarán aquí -->
+    </ul>
+    </main>
+    <script src="https://unpkg.com/@tonejs/midi"></script>
+    <script src="script.js"></script>
+</body>
+</html>
