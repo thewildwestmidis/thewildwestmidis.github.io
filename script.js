@@ -32,7 +32,7 @@ searchForm.addEventListener('submit', function (e) {
 
 async function fetchMidiFiles(searchTerm = '') {
     try {
-        const response = await fetch('https://api.github.com/repos/Bertogim/The-Wild-West-Midis/contents/midis');
+        const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/contents/');
         const data = await response.json();
 
         const midiFiles = data.filter(item => item.name.endsWith('.mid'));
@@ -74,15 +74,19 @@ async function displayFileList(files) {
 
         listItem.innerHTML = `
             <div class="divmidiinfo">
-                <p class="midiname">${formatFileName(file.name)}</p>
+                <p class="midiname"><a href="/midi?m=${file.name}" style="color: inherit; text-decoration: none;">${formatFileName(file.name)}</a></p>
                 <p class="duration"></p>
             </div>
+            <button class="play-button" data-url="${file.download_url}">►</button>
+            <div class="PlayMusicPos"></div>
             <button class="copy-button" data-url="${file.download_url}">Copy Midi Data</button>
             <button class="${isFavorite ? 'remove-favorite-button' : 'favorite-button'}" data-file='${JSON.stringify(file)}'>
                 ${isFavorite ? 'Unfavorite' : 'Favorite'}
-                </button>
-                <button class="play-button" data-url="${file.download_url}">Play</button>
-                <button class="stop-button" style="display: none">Stop</button>
+            </button>
+
+            <!--
+            <button class="stop-button" style="display: none">Stop</button>
+            -->
             `;
 
         fileListContainer.appendChild(listItem);
@@ -131,21 +135,24 @@ async function displayFileList(files) {
     });
     
     const playButtons = document.querySelectorAll('.play-button');
-    const stopButtons = document.querySelectorAll('.stop-button');
+    //const stopButtons = document.querySelectorAll('.stop-button');
 
     playButtons.forEach((playButton, index) => {
         playButton.addEventListener('click', async function () {
             const url = this.getAttribute('data-url');
-            const midiplayer = createElementFromHTML('<midi-player sound-font visualizer="#myVisualizer"></midi-player>');
+            const midiplayer = createElementFromHTML('<midi-player class="Midi-player" sound-font visualizer="#myVisualizer"></midi-player>');
             midiplayer.setAttribute("src",url);
-            midiplayer.style.display = 'none';
+            //midiplayer.style.display = 'none';
             //midiplayer.setAttribute("sound-font visualizer","#section3 midi-visualizer");
-            playButton.parentElement.appendChild(midiplayer);
-            playButton.textContent = "Loading"
-            playButton.classList.add('play-button-loading');
+            playButton.parentElement.getElementsByClassName("PlayMusicPos")[0].appendChild(midiplayer);
+            playButton.remove()
+
+            //playButton.textContent = "Loading"
+            //playButton.classList.add('play-button-loading');
             
             midiplayer.addEventListener('load', () => {
                 midiplayer.start();
+                            /*
                 playButton.textContent = "Play"
                 playButton.classList.remove('play-button-loading');
                 stopButtons.forEach(stopButton => {
@@ -177,12 +184,10 @@ async function displayFileList(files) {
                     // Esconder el botón "Stop" correspondiente
                     stopButtons[index].style.display = 'none';
         
-                });
+                });*/
             });
-            });
-
-
-        });
+        });            
+    });
     
     const favoriteButtons = document.querySelectorAll('.favorite-button');
     favoriteButtons.forEach(button => {

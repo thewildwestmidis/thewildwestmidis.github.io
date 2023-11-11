@@ -1,18 +1,11 @@
-const searchForm = document.getElementById('search-form');
-const searchInput = document.getElementById('search-input');
 const fileListContainer = document.getElementById('file-list');
 const urlParams = new URLSearchParams(window.location.search);
 
-// Obtener el término de búsqueda de los parámetros de la URL
-const searchTermFromURL = urlParams.get('search');
-if (searchTermFromURL) {
-    searchInput.value = searchTermFromURL;
-}
 
 function createElementFromHTML(htmlString) {
     var div = document.createElement('div');
     div.innerHTML = htmlString.trim();
-  
+
     // Change this to div.childNodes to support multiple top-level nodes.
     return div.firstChild;
 }
@@ -20,15 +13,6 @@ function createElementFromHTML(htmlString) {
 // Definir favoriteFileNames aquí para que esté disponible en todo el archivo script.js
 const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 const favoriteFileNames = new Set(favorites.map(file => file.name));
-
-searchForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const searchTerm = searchInput.value.toLowerCase();
-    fetchMidiFiles(searchTerm, favoriteFileNames);
-    // Actualizar la URL con el parámetro de búsqueda
-    urlParams.set('search', searchTerm);
-     history.pushState(null, '', `?search=${encodeURIComponent(searchTerm)}`);
-});
 
 async function fetchMidiFiles(searchTerm = '') {
     try {
@@ -68,18 +52,16 @@ async function displayFileList(files) {
         return;
     }
 
-    const durationPromises = files.map(async file => {
-        if (favoriteFileNames.has(file.name)) {
-        const listItem = document.createElement('li');
-        const isFavorite = favoriteFileNames.has(file.name);
 
-        listItem.innerHTML = `
+    const durationPromises = files.map(async file => {
+        if (selectedmidi.includes(file.name)) {
+            const listItem = document.createElement('li');
+            const isFavorite = favoriteFileNames.has(file.name);
+            listItem.innerHTML = `
             <div class="divmidiinfo">
-                <p class="midiname"><a href="/midi?m=${file.name}" style="color: inherit; text-decoration: none;">${formatFileName(file.name)}</a></p>
+                <p class="midiname">${formatFileName(file.name)}</p>
                 <p class="duration"></p>
             </div>
-            <button class="play-button" data-url="${file.download_url}">►</button>
-            <div class="PlayMusicPos"></div>
             <button class="copy-button" data-url="${file.download_url}">Copy Midi Data</button>
             <button class="${isFavorite ? 'remove-favorite-button' : 'favorite-button'}" data-file='${JSON.stringify(file)}'>
                 ${isFavorite ? 'Unfavorite' : 'Favorite'}
@@ -90,37 +72,41 @@ async function displayFileList(files) {
             -->
             `;
 
-        fileListContainer.appendChild(listItem);
-        
+            fileListContainer.appendChild(listItem);
 
-        // Cargar y mostrar la duración
-        try {
-            const savedDuration = localStorage.getItem(`midi_duration_${file.name}`);
-            if (savedDuration) {
-                const durationDiv = listItem.querySelector('.duration');
-                if (durationDiv) {
-                    durationDiv.textContent = savedDuration;
-                }
-            } else {
-                const midi = await Midi.fromUrl(file.download_url);
-                const durationInSeconds = midi.duration;
-                const minutes = Math.floor(durationInSeconds / 60);
-                const seconds = Math.round(durationInSeconds % 60);
-                const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
-                const durationDiv = listItem.querySelector('.duration');
-                if (durationDiv) {
-                    durationDiv.textContent = durationText;
-                }
 
-                // Guardar la duración en el almacenamiento local
-                localStorage.setItem(`midi_duration_${file.name}`, durationText);
+            // Cargar y mostrar la duración
+            try {
+                const savedDuration = localStorage.getItem(`midi_duration_${file.name}`);
+                if (savedDuration) {
+                    const durationDiv = listItem.querySelector('.duration');
+                    if (durationDiv) {
+                        durationDiv.textContent = savedDuration;
+                    }
+                } else {
+                    const midi = await Midi.fromUrl(file.download_url);
+                    const durationInSeconds = midi.duration;
+                    const minutes = Math.floor(durationInSeconds / 60);
+                    const seconds = Math.round(durationInSeconds % 60);
+                    const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
+                    const durationDiv = listItem.querySelector('.duration');
+                    if (durationDiv) {
+                        durationDiv.textContent = durationText;
+                    }
+
+                    // Guardar la duración en el almacenamiento local
+                    localStorage.setItem(`midi_duration_${file.name}`, durationText);
+                }
+            } catch (error) {
+                console.error('Error loading duration of midi:', file.name, ' - ', error);
             }
-        } catch (error) {
-            console.error('Error loading duration of midi:', file.name, ' - ', error);
-        }
 
-    }});
-    
+            document.body.getElementsByClassName("MidiName")[0].textContent = file.name
+
+
+        };
+    });
+
 
     const copyButtons = document.querySelectorAll('.copy-button');
     copyButtons.forEach(button => {
@@ -134,62 +120,9 @@ async function displayFileList(files) {
             }, 1000));
         });
     });
-    
-    const playButtons = document.querySelectorAll('.play-button');
-    //const stopButtons = document.querySelectorAll('.stop-button');
 
-    playButtons.forEach((playButton, index) => {
-        playButton.addEventListener('click', async function () {
-            const url = this.getAttribute('data-url');
-            const midiplayer = createElementFromHTML('<midi-player class="Midi-player" sound-font visualizer="#myVisualizer"></midi-player>');
-            midiplayer.setAttribute("src",url);
-            //midiplayer.style.display = 'none';
-            //midiplayer.setAttribute("sound-font visualizer","#section3 midi-visualizer");
-            playButton.parentElement.getElementsByClassName("PlayMusicPos")[0].appendChild(midiplayer);
-            playButton.remove()
 
-            //playButton.textContent = "Loading"
-            //playButton.classList.add('play-button-loading');
-            
-            midiplayer.addEventListener('load', () => {
-                midiplayer.start();
-                            /*
-                playButton.textContent = "Play"
-                playButton.classList.remove('play-button-loading');
-                stopButtons.forEach(stopButton => {
-                    stopButton.style.display = 'none';
-                });
-                // Ocultar el botón "Play" actual
-                playButton.style.display = 'none';
-    
-                // Mostrar el botón "Stop" correspondiente
-                stopButtons[index].style.display = 'block';
-                // Mostrar el botón "Play" en los otros elementos
-                playButtons.forEach((button, idx) => {
-                    if (idx !== index) {
-                        button.style.display = 'block';
-                    }
-                });
 
-                // Parar el midi
-
-                const stopButton = playButton.parentElement.querySelector('.stop-button');
-
-                stopButton.addEventListener('click', () => {
-                    midiplayer.stop();
-                    midiplayer.remove();
-                    // Mostrar el botón "Play" en los otros elementos
-                    playButtons.forEach((button, idx) => {
-                        button.style.display = 'block';
-                    });
-                    // Esconder el botón "Stop" correspondiente
-                    stopButtons[index].style.display = 'none';
-        
-                });*/
-            });
-        });            
-    });
-    
     const favoriteButtons = document.querySelectorAll('.favorite-button');
     favoriteButtons.forEach(button => {
         button.addEventListener('click', function () {
@@ -235,6 +168,7 @@ async function displayFileList(files) {
             localStorage.setItem('favorites', JSON.stringify(favorites));
         });
     });
+
 }
 
 function copyToClipboard(text) {
@@ -267,8 +201,25 @@ favoriteButtons.forEach(button => {
     });
 });
 
-// Llamar a la función para obtener y mostrar la lista de archivos MIDI
-const searchTerm = urlParams.get('search');
-setTimeout(() => {
-    fetchMidiFiles(searchTerm);
-}, 100);
+const selectedmidi = urlParams.get('m');
+
+if (selectedmidi) {
+    // Realiza operaciones con el archivo MIDI seleccionado
+    console.log('Selected midi:', selectedmidi);
+    fetchMidiFiles("");
+} else {
+    // No se proporcionó un archivo MIDI seleccionado
+    console.log('Ningún archivo MIDI seleccionado en la URL');
+}
+
+//Midi player
+const BaseUrl = "https://raw.githubusercontent.com/Bertogim/The-Wild-West-Midis/main/midis/"
+
+const midiplayer = document.getElementById("midiplayersection").getElementsByClassName("MidPlayer")[0]
+const midivisualizer = document.getElementById("midiplayersection").getElementsByClassName("MidVisualizer")[0]
+midiplayer.setAttribute("sound-font", "");
+midiplayer.setAttribute("visualizer", "#midvis");
+midiplayer.setAttribute("src", BaseUrl+selectedmidi);
+midivisualizer.setAttribute("src", BaseUrl+selectedmidi);
+document.getElementById("midiplayersection").appendChild(midiplayer);
+document.getElementById("midiplayersection").appendChild(midivisualizer);

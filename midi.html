@@ -1,6 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,14 +25,17 @@
         gtag('config', 'G-4TVB1MLE2Z');
     </script>
 
-<script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.4.0"></script>
+<script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.5.0"></script>
 </head>
-
 <body>
 
     <header>
         <div style="display: flex; justify-content: left; gap: 20px;">
             <h2 style="margin: 0;"></h2>The Wild West Midis</h2>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="/" target=""
+                    style="color: inherit; text-decoration: underline;">All midis</a>
+            </p>
             <p style="margin: 0; color: #b7b7b7;">
                 <a href="/tutorial"
                     style="color: inherit; text-decoration: underline;">How to play music</a>
@@ -57,18 +58,19 @@
         <h1>The Wild West Midis</h1>
         <h3>The best midi list for the wild west! 200+ Midis</h3>
         <p>The wild west midis by Bertogim</p>
-    </center>
-
-
-    <form id="search-form">
-        <input type="text" id="search-input" placeholder="Search Midis">
-        <button type="submit">Search</button>
-    </form>
+        <hr>
+    <h2 class="MidiName">MidiName</h2>
+</center>
     <ul id="file-list">
         <!-- Los resultados de búsqueda se mostrarán aquí -->
     </ul>
-    </main>
+
+    <section id="midiplayersection">
+        <midi-player class="MidPlayer"></midi-player>
+        <midi-visualizer class="MidVisualizer" id="midvis"></midi-visualizer>
+
+    </section>
+
     <script src="https://unpkg.com/@tonejs/midi"></script>
-    <script src="script.js"></script>
+    <script src="midi.js"></script>
 </body>
-</html>

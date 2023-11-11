@@ -7,4 +7,4 @@ It has a button to direclty copy the midi you want </br>
 It has a favorite button to see your favorite midis
 
 
-### Link: https://bertogim.github.io/The-Wild-West-Midis/
+### Link: https://thewildwestmidis.github.io/

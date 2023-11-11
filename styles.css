@@ -22,6 +22,10 @@ h1, h2 {
     font-family: 'Trebuchet MS', sans-serif; /* Puedes cambiar "Times New Roman" por la fuente que prefieras */
 }
 
+hr {
+    border: 1px solid #5a5e64;
+}
+
 /* Estilos para el formulario de búsqueda */
 #search-form {
     margin: 20px auto;
@@ -80,18 +84,104 @@ h1, h2 {
     background-color: #5a5e64;
 }
 .play-button {
-    padding: 5px 10px;
-    background-color: rgb(77, 110, 94);
+    padding: 10px 10px;
+    background-color: rgba(0, 0, 0, 0);
     color: white;
     border: none;
     cursor: pointer;
     border-radius: 10px;
-    margin-left: 10px;
+    margin-left: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 .play-button:hover{
-    background-color: rgb(81, 131, 107);
+    background-color: rgb(98, 101, 102);
 }
+
+.PlayMusicPos {
+    height:50px;
+    margin-left: 10px;
+    margin-top: auto;
+    margin-bottom: 5px;
+}
+
+.Midi-player{
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.Midi-player::part(control-panel) {
+    background-color: rgb(75, 80, 83);
+    border: 3px solid #515458;
+
+}
+
+.Midi-player::part(play-button) {
+    color: white;
+}
+
+.Midi-player::part(play-button):hover {
+    background-color: rgb(98, 101, 102);
+    border-radius: 10px;
+}
+
+/* cosa */
+
+#midiplayersection midi-player {
+    width: inherit;
+    display: block;
+    margin: 4px;
+    margin-bottom: 0;
+}
+
+#midiplayersection midi-player::part(control-panel) {
+    background-color: rgb(75, 80, 83);
+    border: 3px solid #515458;
+    border-radius: 10px 10px 0 0;
+    padding-bottom: -1px;
+}
+
+#midiplayersection midi-player::part(play-button) {
+    color: white;
+}
+
+#midiplayersection midi-player::part(play-button):hover {
+    background-color: rgb(98, 101, 102);
+    border-radius: 10px;
+}
+
+#midiplayersection midi-visualizer .piano-roll-visualizer {
+    background-color: rgb(75, 80, 83);
+
+    border-top: none;
+    border: 3px solid #515458;
+    border-radius: 0 0 10px 10px;
+    margin: 4px;
+    margin-top: 0;
+    overflow: auto;
+  }
+  #midiplayersection midi-visualizer svg rect.note {
+    opacity: 0.8;
+    stroke-width: 2;
+  }
+  #midiplayersection midi-visualizer svg rect.note[data-instrument="0"]{
+    fill: #e22;
+    stroke: #500;
+  }
+  #midiplayersection midi-visualizer svg rect.note[data-instrument="2"]{
+    fill: #2ee;
+    stroke: #055;
+  }
+  #midiplayersection midi-visualizer svg rect.note[data-is-drum="true"]{
+    fill: #888;
+    stroke: #888;
+  }
+  #midiplayersection midi-visualizer svg rect.note.active {
+    opacity: 0.9;
+    stroke: rgba(184, 184, 184, 0.637);
+  }
+/*
 
 .play-button-loading {
     background-color: rgb(117, 135, 85);
@@ -100,7 +190,7 @@ h1, h2 {
     background-color: rgb(126, 146, 90);
 }
 
-
+*/
 
 .stop-button {
     padding: 5px 10px;
@@ -191,8 +281,9 @@ h1, h2 {
 }
 
 .midiname {
-    margin-top: 10px;
     margin-bottom: 0px;
+    margin: 0;
+    color: #ffffff;
 }
 
 .midinamef {
@@ -206,4 +297,17 @@ h1, h2 {
     margin-top: 0px;
     margin-top: 0px;
     margin-bottom: 5px;
+}
+
+.divmidiinfo {
+    margin-top: 10px;
+}
+
+.aboutbox {
+    margin: 10px;
+    padding: 15px;
+    border-radius: 20px;
+    background-color: #424549; /* Cambia este color al que desees */
+    border: 3px solid #474b4e;
+    text-align: left;
 }
