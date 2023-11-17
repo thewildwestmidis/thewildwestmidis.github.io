@@ -55,12 +55,20 @@
         <p>The wild west midis by Bertogim</p>
     </center>
     <form id="search-form">
-        <input type="text" id="search-input" placeholder="Search Favorites">
+        <button id="BackButton">Back</button>
+        <input type="text" id="search-input" placeholder="Search Midis">
         <button type="submit">Search</button>
     </form>
+
     <ul id="file-list">
         <!-- Los resultados de búsqueda se mostrarán aquí -->
     </ul>
+    <center>
+    <div id="paginationmain">
+    <h3>Pages:</h3>
+    <div id="pagination"></div>
+    </div>
+    </center>
     </main>
     <script src="favorites.js"></script>
     <script src="https://unpkg.com/@tonejs/midi"></script>
