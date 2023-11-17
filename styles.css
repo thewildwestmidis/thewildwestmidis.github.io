@@ -26,6 +26,8 @@ hr {
     border: 1px solid #5a5e64;
 }
 
+
+
 /* Estilos para el formulario de búsqueda */
 #search-form {
     margin: 20px auto;
@@ -53,6 +55,40 @@ hr {
 
 #search-form button:hover{
     background-color: #5a5e64;
+}
+
+#pagination {
+    margin: 20px auto;
+    text-align: center;
+    border-radius: 10px;
+}
+
+#pagination button {
+    padding: 7.5px 15px;
+    background-color: #4f5155;
+    color: rgb(255, 255, 255);
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin: 5px;
+}
+
+#pagination .active {
+    background-color: #61666d;
+}
+
+#pagination button:hover{
+    background-color: #5a5e64;
+}
+
+#paginationmain {
+    padding: 5px;
+    border-radius: 20px;
+    background-color: #424549; /* Cambia este color al que desees */
+    border: 3px solid #474b4e;
+    text-align: center;
+    width: 50%;
+    
 }
 
 /* Agrega estilos a los resultados de búsqueda */
@@ -215,6 +251,7 @@ hr {
 }
 
 .back-button {
+
     padding: 5px 10px;
     background-color: #4f5155;
     color: white;
