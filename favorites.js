@@ -95,13 +95,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         // Agregar botón de retroceso para búsquedas
         const backButton = document.getElementById("BackButton")
         backButton.style.display = "inline"
-        backButton.addEventListener('click', () => {
-            const searchInput = document.getElementById('search-input');
-            searchInput.value = '';
-            window.location.href = "/favorites";
-            fetchMidiFiles('', 1);
-            backButton.style.display = "none"
-        });
+        backButton.setAttribute("href","/favorites")
     }
 }
 
