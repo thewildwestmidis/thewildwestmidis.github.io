@@ -14,12 +14,15 @@ header {
 body {
     background-color: #35393e;
     color: #ffffff;
-    font-family: Arial, sans-serif; /* Puedes cambiar "Arial" por la fuente que prefieras */
+    font-family: Arial, sans-serif;
+    /* Puedes cambiar "Arial" por la fuente que prefieras */
     /* Otros estilos para elementos en modo oscuro */
 }
 
-h1, h2 {
-    font-family: 'Trebuchet MS', sans-serif; /* Puedes cambiar "Times New Roman" por la fuente que prefieras */
+h1,
+h2 {
+    font-family: 'Trebuchet MS', sans-serif;
+    /* Puedes cambiar "Times New Roman" por la fuente que prefieras */
 }
 
 hr {
@@ -57,7 +60,7 @@ a {
     border-radius: 10px;
 }
 
-#search-form button:hover{
+#search-form button:hover {
     background-color: #5a5e64;
 }
 
@@ -81,18 +84,19 @@ a {
     background-color: #61666d;
 }
 
-#pagination button:hover{
+#pagination button:hover {
     background-color: #5a5e64;
 }
 
 #paginationmain {
     padding: 5px;
     border-radius: 20px;
-    background-color: #424549; /* Cambia este color al que desees */
+    background-color: #424549;
+    /* Cambia este color al que desees */
     border: 3px solid #474b4e;
     text-align: center;
     width: 50%;
-    
+
 }
 
 /* Agrega estilos a los resultados de búsqueda */
@@ -100,7 +104,8 @@ a {
     margin: 10px;
     padding: 15px;
     border-radius: 20px;
-    background-color: #424549; /* Cambia este color al que desees */
+    background-color: #424549;
+    /* Cambia este color al que desees */
     border: 3px solid #474b4e;
     justify-content: space-around;
     align-items: auto;
@@ -120,9 +125,10 @@ a {
     margin-left: auto;
 }
 
-.copy-button:hover{
+.copy-button:hover {
     background-color: #5a5e64;
 }
+
 .play-button {
     padding: 10px 10px;
     background-color: rgba(0, 0, 0, 0);
@@ -135,18 +141,18 @@ a {
     margin-bottom: auto;
 }
 
-.play-button:hover{
+.play-button:hover {
     background-color: rgb(98, 101, 102);
 }
 
 .PlayMusicPos {
-    height:50px;
+    height: 50px;
     margin-left: 10px;
     margin-top: auto;
     margin-bottom: 5px;
 }
 
-.Midi-player{
+.Midi-player {
     margin-top: auto;
     margin-bottom: auto;
 }
@@ -200,27 +206,79 @@ a {
     margin: 4px;
     margin-top: 0;
     overflow: auto;
-  }
-  #midiplayersection midi-visualizer svg rect.note {
+}
+
+#midiplayersection midi-visualizer svg rect.note {
     opacity: 0.8;
     stroke-width: 2;
-  }
-  #midiplayersection midi-visualizer svg rect.note[data-instrument="0"]{
-    fill: #e22;
-    stroke: #500;
-  }
-  #midiplayersection midi-visualizer svg rect.note[data-instrument="2"]{
-    fill: #2ee;
-    stroke: #055;
-  }
-  #midiplayersection midi-visualizer svg rect.note[data-is-drum="true"]{
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="0"] {
+    fill: rgb(21, 49, 68);
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="2"] {
+    fill: #3e2b1c;
+    /* Marrón oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="3"] {
+    fill: #152d44;
+    /* Azul oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="4"] {
+    fill: #001f3f;
+    /* Azul marino */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="5"] {
+    fill: #a3a120;
+    /* Amarillo verdoso */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="6"] {
+    fill: #d98600;
+    /* Naranja oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="7"] {
+    fill: #7b6b6b;
+    /* Gris oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="8"] {
+    fill: #444;
+    /* Gris */
+}
+
+
+#midiplayersection midi-visualizer svg rect.note.active[data-instrument="0"] {
+    fill: rgb(21, 49, 68);
+}
+
+#midiplayersection midi-visualizer svg rect.note.active[data-instrument="3"] {
+    fill: #152d44;
+    /* Azul oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note.active[data-instrument="4"] {
+    fill: #001f3f;
+    /* Azul marino */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-is-drum="true"] {
     fill: #888;
-    stroke: #888;
-  }
-  #midiplayersection midi-visualizer svg rect.note.active {
+    /* Gris */
+}
+
+
+
+#midiplayersection midi-visualizer svg rect.note.active {
     opacity: 0.9;
     stroke: rgba(184, 184, 184, 0.637);
-  }
+}
+
 /*
 
 .play-button-loading {
@@ -242,7 +300,7 @@ a {
     margin-left: 10px;
 }
 
-.stop-button:hover{
+.stop-button:hover {
     background-color: rgb(146, 71, 67);
 }
 
@@ -265,11 +323,11 @@ a {
     width: 5%;
 }
 
-.back-button:hover{
+.back-button:hover {
     background-color: #5a5e64;
 }
 
-.the-iframe{
+.the-iframe {
     padding: 5px 10px;
     background-color: white;
     color: white;
@@ -278,7 +336,7 @@ a {
     border-radius: 10px;
 }
 
-.request-button{
+.request-button {
     padding: 1% 10px;
     background-color: #4f5155;
     color: white;
@@ -289,7 +347,7 @@ a {
     height: 10%;
 }
 
-.request-button:hover{
+.request-button:hover {
     background-color: #5a5e64;
 }
 
@@ -348,7 +406,8 @@ a {
     margin: 10px;
     padding: 15px;
     border-radius: 20px;
-    background-color: #424549; /* Cambia este color al que desees */
+    background-color: #424549;
+    /* Cambia este color al que desees */
     border: 3px solid #474b4e;
     text-align: left;
 }

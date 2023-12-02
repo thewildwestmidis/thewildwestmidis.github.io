@@ -213,7 +213,7 @@ if (selectedmidi) {
 }
 
 //Midi player
-const BaseUrl = "https://raw.githubusercontent.com/Bertogim/The-Wild-West-Midis/main/midis/"
+const BaseUrl = "https://thewildwestmidis.github.io/midis/"
 
 const midiplayer = document.getElementById("midiplayersection").getElementsByClassName("MidPlayer")[0]
 const midivisualizer = document.getElementById("midiplayersection").getElementsByClassName("MidVisualizer")[0]
