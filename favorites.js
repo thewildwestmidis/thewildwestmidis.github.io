@@ -116,7 +116,7 @@ async function displayFileList(files) {
     fileListContainer.innerHTML = '';
 
     if (files.length === 0) {
-        fileListContainer.innerHTML = '<p>No results found.</p>';
+        fileListContainer.innerHTML = '<p>No favorites found, you can add favorites <a href="/">here</a>.</p>';
         return;
     }
 

@@ -2,27 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
   <loc>https://thewildwestmidis.github.io</loc>
-  <lastmod>2023-11-11T18:51:27+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
   <loc>https://thewildwestmidis.github.io/tutorial</loc>
-  <lastmod>2023-11-11T18:51:27+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://thewildwestmidis.github.io/request</loc>
-  <lastmod>2023-11-11T18:51:27+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://thewildwestmidis.github.io/favorites</loc>
-  <lastmod>2023-11-11T18:51:27+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://thewildwestmidis.github.io/about</loc>
-  <lastmod>2023-11-11T18:51:27+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 </urlset>
