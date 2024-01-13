@@ -104,13 +104,18 @@ function generatePagination(totalPages, currentPage, searchTerm) {
     }
 }
 
-function formatFileName(name) {
-    // Reemplazar "_" y "-" por " " (espacio)
-    const formattedName = name.replace(/_/g, ' ').replace(/-/g, ' ');
-
-    // Eliminar espacios duplicados causados por el reemplazo anterior
-    return formattedName.replace(/\s+/g, ' ');
-}
+function formatFileName(text) {
+    // Reemplazar "_" por espacio
+    text = text.replace(/_/g, ' ');
+  
+    // Eliminar "-" si hay texto a ambos lados
+    text = text.replace(/([^ ])-([^ ])/g, '$1 $2');
+  
+    // Eliminar ".mid"
+    text = text.replace(/\.mid/g, '');
+  
+    return text;
+  }
 
 async function displayFileList(files) {
     fileListContainer.innerHTML = '';

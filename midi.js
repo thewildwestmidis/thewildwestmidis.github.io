@@ -29,6 +29,13 @@ async function fetchMidiFiles(searchTerm = '') {
         } else {
             displayFileList(midiFiles, favoriteFileNames); // Pass favoriteFileNames here
         }
+
+        // Check if the selectedmidi exists in the fetched MIDI files
+        const isMidiFound = midiFiles.some(file => file.name === selectedmidi);
+        if (!isMidiFound) {
+            document.body.getElementsByClassName("MidiName")[0].textContent = "Midi Not Found 404"
+            document.body.getElementsByClassName("GoBack")[0].textContent = "Go Back"
+        }
     } catch (error) {
         console.error('Error fetching MIDI files:', error);
     }
@@ -36,12 +43,17 @@ async function fetchMidiFiles(searchTerm = '') {
 
 
 
-function formatFileName(name) {
-    // Reemplazar "_" y "-" por " " (espacio)
-    const formattedName = name.replace(/_/g, ' ').replace(/-/g, ' ');
+function formatFileName(text) {
+    // Reemplazar "_" por espacio
+    text = text.replace(/_/g, ' ');
 
-    // Eliminar espacios duplicados causados por el reemplazo anterior
-    return formattedName.replace(/\s+/g, ' ');
+    // Eliminar "-" si hay texto a ambos lados
+    text = text.replace(/([^ ])-([^ ])/g, '$1 $2');
+
+    // Eliminar ".mid"
+    text = text.replace(/\.mid/g, '');
+
+    return text;
 }
 
 async function displayFileList(files) {
@@ -101,7 +113,7 @@ async function displayFileList(files) {
                 console.error('Error loading duration of midi:', file.name, ' - ', error);
             }
 
-            document.body.getElementsByClassName("MidiName")[0].textContent = file.name
+            document.body.getElementsByClassName("MidiName")[0].textContent = formatFileName(file.name)
 
 
         };
@@ -219,7 +231,7 @@ const midiplayer = document.getElementById("midiplayersection").getElementsByCla
 const midivisualizer = document.getElementById("midiplayersection").getElementsByClassName("MidVisualizer")[0]
 midiplayer.setAttribute("sound-font", "");
 midiplayer.setAttribute("visualizer", "#midvis");
-midiplayer.setAttribute("src", BaseUrl+selectedmidi);
-midivisualizer.setAttribute("src", BaseUrl+selectedmidi);
+midiplayer.setAttribute("src", BaseUrl + selectedmidi);
+midivisualizer.setAttribute("src", BaseUrl + selectedmidi);
 document.getElementById("midiplayersection").appendChild(midiplayer);
 document.getElementById("midiplayersection").appendChild(midivisualizer);

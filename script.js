@@ -40,6 +40,8 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
         const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/contents/');
         const data = await response.json();
 
+        console.log(data)
+
         const midiFiles = data.filter(item => item.name.endsWith('.mid'));
         const favoriteFileNames = new Set(favorites.map(file => file.name));
 
@@ -99,13 +101,18 @@ function replaceSpaces(inputString) {
     return inputString.replace(/ /g, '%20');
 }
 
-function formatFileName(name) {
-    // Reemplazar "_" y "-" por " " (espacio)
-    const formattedName = name.replace(/_/g, ' ').replace(/-/g, ' ');
-
-    // Eliminar espacios duplicados causados por el reemplazo anterior
-    return formattedName.replace(/\s+/g, ' ');
-}
+function formatFileName(text) {
+    // Reemplazar "_" por espacio
+    text = text.replace(/_/g, ' ');
+  
+    // Eliminar "-" si hay texto a ambos lados
+    text = text.replace(/([^ ])-([^ ])/g, '$1 $2');
+  
+    // Eliminar ".mid"
+    text = text.replace(/\.mid/g, '');
+  
+    return text;
+  }
 
 async function displayFileList(files) {
     fileListContainer.innerHTML = '';
