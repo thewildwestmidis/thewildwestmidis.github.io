@@ -114,8 +114,8 @@ async function displayFileList(files) {
             }
 
             document.body.getElementsByClassName("MidiName")[0].textContent = formatFileName(file.name)
-
-
+            document.title = 'The Wild West Midis - Midi: '+formatFileName(file.name)
+            document.querySelector('meta[property="og:title"]').content = 'The Wild West Midis - Midi: '+formatFileName(file.name)
         };
     });
 
