@@ -14,28 +14,32 @@ function createElementFromHTML(htmlString) {
 const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 const favoriteFileNames = new Set(favorites.map(file => file.name));
 
-async function fetchMidiFiles(searchTerm = '') {
+async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 9999999) {
     try {
-        const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/contents/');
-        const data = await response.json();
+        const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/git/trees/main?recursive=1');
+        const data1 = await response.json();
+        const data = data1.tree.map(item => ({...item, name: item.path}));
 
-        const midiFiles = data.filter(item => item.name.endsWith('.mid'));
-        const favoriteFileNames = new Set(favorites.map(file => file.name)); // Create favoriteFileNames here
+        console.log(data);
+
+        const midiFiles = data.filter(item => item.path.endsWith('.mid'));
+        const favoriteFilepaths = new Set(favorites.map(file => file.path));
 
         // Filtrar por término de búsqueda si se proporciona
+        let filteredFiles = midiFiles;
         if (searchTerm) {
-            const filteredFiles = midiFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
-            displayFileList(filteredFiles, favoriteFileNames); // Pass favoriteFileNames here
-        } else {
-            displayFileList(midiFiles, favoriteFileNames); // Pass favoriteFileNames here
+            filteredFiles = midiFiles.filter(file => file.path.toLowerCase().includes(searchTerm));
         }
 
-        // Check if the selectedmidi exists in the fetched MIDI files
-        const isMidiFound = midiFiles.some(file => file.name === selectedmidi);
-        if (!isMidiFound) {
-            document.body.getElementsByClassName("MidiName")[0].textContent = "Midi Not Found 404"
-            document.body.getElementsByClassName("GoBack")[0].textContent = "Go Back"
-        }
+        // Actualizar currentPage y pageSize globalmente
+        currentPage = page;
+
+        // Calcular límites de la página
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedFiles = filteredFiles.slice(startIndex, endIndex);
+
+        displayFileList(paginatedFiles);
     } catch (error) {
         console.error('Error fetching MIDI files:', error);
     }

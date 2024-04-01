@@ -42,20 +42,20 @@ let currentPage = 1;
 
 async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
     try {
-        const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/contents/');
-        const data = await response.json();
+        const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/git/trees/main?recursive=1');
+        const data1 = await response.json();
+        const data = data1.tree.map(item => ({...item, name: item.path}));
 
-        const midiFiles = data.filter(item => item.name.endsWith('.mid'));
-        const favoriteFileNames = new Set(favorites.map(file => file.name));
+        console.log(data);
+
+        const midiFiles = data.filter(item => item.path.endsWith('.mid'));
+        const favoriteFilepaths = new Set(favorites.map(file => file.path));
 
         // Filtrar por término de búsqueda si se proporciona
         let filteredFiles = midiFiles;
         if (searchTerm) {
-            filteredFiles = midiFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
+            filteredFiles = midiFiles.filter(file => file.path.toLowerCase().includes(searchTerm));
         }
-
-        // Filtrar por favoritos
-        filteredFiles = filteredFiles.filter(file => favoriteFileNames.has(file.name));
 
         // Actualizar currentPage y pageSize globalmente
         currentPage = page;
@@ -63,7 +63,6 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
         // Calcular límites de la página
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
-
         const paginatedFiles = filteredFiles.slice(startIndex, endIndex);
 
         displayFileList(paginatedFiles);

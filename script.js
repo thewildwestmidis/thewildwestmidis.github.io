@@ -37,18 +37,19 @@ let currentPage = 1;
 
 async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
     try {
-        const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/contents/');
-        const data = await response.json();
+        const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/git/trees/main?recursive=1');
+        const data1 = await response.json();
+        const data = data1.tree.map(item => ({...item, name: item.path}));
 
-        console.log(data)
+        console.log(data);
 
-        const midiFiles = data.filter(item => item.name.endsWith('.mid'));
-        const favoriteFileNames = new Set(favorites.map(file => file.name));
+        const midiFiles = data.filter(item => item.path.endsWith('.mid'));
+        const favoriteFilepaths = new Set(favorites.map(file => file.path));
 
         // Filtrar por término de búsqueda si se proporciona
         let filteredFiles = midiFiles;
         if (searchTerm) {
-            filteredFiles = midiFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
+            filteredFiles = midiFiles.filter(file => file.path.toLowerCase().includes(searchTerm));
         }
 
         // Actualizar currentPage y pageSize globalmente
@@ -68,6 +69,7 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
         console.error('Error fetching MIDI files:', error);
     }
 }
+
 
 function generatePagination(totalPages, currentPage, searchTerm) {
     const paginationContainer = document.getElementById('pagination');
@@ -125,7 +127,7 @@ async function displayFileList(files) {
     const durationPromises = files.map(async file => {
         const listItem = document.createElement('li');
         const isFavorite = favoriteFileNames.has(file.name);
-        const midiNameUrl = replaceSpaces(file.name);
+        const midiNameUrl = encodeURI(file.name);
 
 
         listItem.innerHTML = `
@@ -133,7 +135,7 @@ async function displayFileList(files) {
                 <p class="midiname"><a href="/midi?m=${midiNameUrl}" style="color: inherit; text-decoration: none;">${formatFileName(file.name)}</a></p>
                 <p class="duration"></p>
             </div>
-            <button class="play-button" data-url="${file.download_url}">►</button>
+            <button class="play-button" data-url="https://thewildwestmidis.github.io/midis/${midiNameUrl}">►</button>
             <div class="PlayMusicPos"></div>
             <button class="copy-button" data-url="https://thewildwestmidis.github.io/midis/${midiNameUrl}">Copy Midi Data</button>
             <button class="${isFavorite ? 'remove-favorite-button' : 'favorite-button'}" data-file='${JSON.stringify(file)}'>
@@ -152,7 +154,7 @@ async function displayFileList(files) {
                     durationDiv.textContent = savedDuration;
                 }
             } else {
-                const midi = await Midi.fromUrl(file.download_url);
+                const midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/"+midiNameUrl);
                 const durationInSeconds = midi.duration;
                 const minutes = Math.floor(durationInSeconds / 60);
                 const seconds = Math.round(durationInSeconds % 60);
