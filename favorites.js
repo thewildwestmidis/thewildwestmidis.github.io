@@ -18,7 +18,7 @@ function replaceSpaces(inputString) {
 function createElementFromHTML(htmlString) {
     var div = document.createElement('div');
     div.innerHTML = htmlString.trim();
-  
+
     // Change this to div.childNodes to support multiple top-level nodes.
     return div.firstChild;
 }
@@ -44,18 +44,21 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
     try {
         const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/git/trees/main?recursive=1');
         const data1 = await response.json();
-        const data = data1.tree.map(item => ({...item, name: item.path}));
+        const data = data1.tree.map(item => ({ ...item, name: item.path }));
 
         console.log(data);
 
-        const midiFiles = data.filter(item => item.path.endsWith('.mid'));
-        const favoriteFilepaths = new Set(favorites.map(file => file.path));
+        const midiFiles = data.filter(item => item.name.endsWith('.mid'));
+        const favoriteFilenames = new Set(favorites.map(file => file.name));
 
         // Filtrar por término de búsqueda si se proporciona
         let filteredFiles = midiFiles;
         if (searchTerm) {
-            filteredFiles = midiFiles.filter(file => file.path.toLowerCase().includes(searchTerm));
+            filteredFiles = midiFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
         }
+
+        // Filtrar por favoritos
+        filteredFiles = filteredFiles.filter(file => favoriteFileNames.has(file.name));
 
         // Actualizar currentPage y pageSize globalmente
         currentPage = page;
@@ -99,22 +102,22 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         // Agregar botón de retroceso para búsquedas
         const backButton = document.getElementById("BackButton")
         backButton.style.display = "inline"
-        backButton.setAttribute("href","/favorites")
+        backButton.setAttribute("href", "/favorites")
     }
 }
 
 function formatFileName(text) {
     // Reemplazar "_" por espacio
     text = text.replace(/_/g, ' ');
-  
+
     // Eliminar "-" si hay texto a ambos lados
     text = text.replace(/([^ ])-([^ ])/g, '$1 $2');
-  
+
     // Eliminar ".mid"
     text = text.replace(/\.mid/g, '');
-  
+
     return text;
-  }
+}
 
 async function displayFileList(files) {
     fileListContainer.innerHTML = '';
@@ -126,11 +129,11 @@ async function displayFileList(files) {
 
     const durationPromises = files.map(async file => {
         if (favoriteFileNames.has(file.name)) {
-        const listItem = document.createElement('li');
-        const isFavorite = favoriteFileNames.has(file.name);
-        const midiNameUrl = replaceSpaces(file.name);
+            const listItem = document.createElement('li');
+            const isFavorite = favoriteFileNames.has(file.name);
+            const midiNameUrl = replaceSpaces(file.name);
 
-        listItem.innerHTML = `
+            listItem.innerHTML = `
             <div class="divmidiinfo">
                 <p class="midiname"><a href="/midi?m=${midiNameUrl}" style="color: inherit; text-decoration: none;">${formatFileName(file.name)}</a></p>
                 <p class="duration"></p>
@@ -143,34 +146,35 @@ async function displayFileList(files) {
             </button>
         `;
 
-        fileListContainer.appendChild(listItem);
+            fileListContainer.appendChild(listItem);
 
-        // Cargar y mostrar la duración
-        try {
-            const savedDuration = localStorage.getItem(`midi_duration_${file.name}`);
-            if (savedDuration) {
-                const durationDiv = listItem.querySelector('.duration');
-                if (durationDiv) {
-                    durationDiv.textContent = savedDuration;
-                }
-            } else {
-                const midi = await Midi.fromUrl(file.download_url);
-                const durationInSeconds = midi.duration;
-                const minutes = Math.floor(durationInSeconds / 60);
-                const seconds = Math.round(durationInSeconds % 60);
-                const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
-                const durationDiv = listItem.querySelector('.duration');
-                if (durationDiv) {
-                    durationDiv.textContent = durationText;
-                }
+            // Cargar y mostrar la duración
+            try {
+                const savedDuration = localStorage.getItem(`midi_duration_${file.name}`);
+                if (savedDuration) {
+                    const durationDiv = listItem.querySelector('.duration');
+                    if (durationDiv) {
+                        durationDiv.textContent = savedDuration;
+                    }
+                } else {
+                    const midi = await Midi.fromUrl(file.download_url);
+                    const durationInSeconds = midi.duration;
+                    const minutes = Math.floor(durationInSeconds / 60);
+                    const seconds = Math.round(durationInSeconds % 60);
+                    const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
+                    const durationDiv = listItem.querySelector('.duration');
+                    if (durationDiv) {
+                        durationDiv.textContent = durationText;
+                    }
 
-                // Guardar la duración en el almacenamiento local
-                localStorage.setItem(`midi_duration_${file.name}`, durationText);
+                    // Guardar la duración en el almacenamiento local
+                    localStorage.setItem(`midi_duration_${file.name}`, durationText);
+                }
+            } catch (error) {
+                console.warn('Cant load duration of midi:', file.name, ' - ', error);
             }
-        } catch (error) {
-            console.warn('Cant load duration of midi:', file.name, ' - ', error);
         }
-    }});
+    });
 
     const copyButtons = document.querySelectorAll('.copy-button');
     copyButtons.forEach(button => {
@@ -191,7 +195,7 @@ async function displayFileList(files) {
         playButton.addEventListener('click', async function () {
             const url = this.getAttribute('data-url');
             const midiplayer = createElementFromHTML('<midi-player class="Midi-player" sound-font visualizer="#myVisualizer"></midi-player>');
-            midiplayer.setAttribute("src",url);
+            midiplayer.setAttribute("src", url);
             playButton.parentElement.getElementsByClassName("PlayMusicPos")[0].appendChild(midiplayer);
             playButton.remove()
 

@@ -22,13 +22,13 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 9999999) {
 
         console.log(data);
 
-        const midiFiles = data.filter(item => item.path.endsWith('.mid'));
-        const favoriteFilepaths = new Set(favorites.map(file => file.path));
+        const midiFiles = data.filter(item => item.name.endsWith('.mid'));
+        const favoriteFilenames = new Set(favorites.map(file => file.name));
 
         // Filtrar por término de búsqueda si se proporciona
         let filteredFiles = midiFiles;
         if (searchTerm) {
-            filteredFiles = midiFiles.filter(file => file.path.toLowerCase().includes(searchTerm));
+            filteredFiles = midiFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
         }
 
         // Actualizar currentPage y pageSize globalmente
