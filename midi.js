@@ -18,28 +18,25 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 9999999) {
     try {
         const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/git/trees/main?recursive=1');
         const data1 = await response.json();
-        const data = data1.tree.map(item => ({...item, name: item.path}));
+        const data = data1.tree.map(item => ({ ...item, name: item.path }));
 
         console.log(data);
 
         const midiFiles = data.filter(item => item.name.endsWith('.mid'));
-        const favoriteFilenames = new Set(favorites.map(file => file.name));
 
-        // Filtrar por término de búsqueda si se proporciona
-        let filteredFiles = midiFiles;
         if (searchTerm) {
-            filteredFiles = midiFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
+            const filteredFiles = midiFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
+            displayFileList(filteredFiles, favoriteFileNames); // Pass favoriteFileNames here
+        } else {
+            displayFileList(midiFiles, favoriteFileNames); // Pass favoriteFileNames here
         }
 
-        // Actualizar currentPage y pageSize globalmente
-        currentPage = page;
-
-        // Calcular límites de la página
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedFiles = filteredFiles.slice(startIndex, endIndex);
-
-        displayFileList(paginatedFiles);
+        // Check if the selectedmidi exists in the fetched MIDI files
+        const isMidiFound = midiFiles.some(file => file.name === selectedmidi);
+        if (!isMidiFound) {
+            document.body.getElementsByClassName("MidiName")[0].textContent = "Midi Not Found 404"
+            document.body.getElementsByClassName("GoBack")[0].textContent = "Go Back"
+        }
     } catch (error) {
         console.error('Error fetching MIDI files:', error);
     }
@@ -118,8 +115,8 @@ async function displayFileList(files) {
             }
 
             document.body.getElementsByClassName("MidiName")[0].textContent = formatFileName(file.name)
-            document.title = 'The Wild West Midis - Midi: '+formatFileName(file.name)
-            document.querySelector('meta[property="og:title"]').content = 'The Wild West Midis - Midi: '+formatFileName(file.name)
+            document.title = 'The Wild West Midis - Midi: ' + formatFileName(file.name)
+            document.querySelector('meta[property="og:title"]').content = 'The Wild West Midis - Midi: ' + formatFileName(file.name)
         };
     });
 
