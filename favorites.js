@@ -132,19 +132,20 @@ async function displayFileList(files) {
             const listItem = document.createElement('li');
             const isFavorite = favoriteFileNames.has(file.name);
             const midiNameUrl = replaceSpaces(file.name);
-
+    
+    
             listItem.innerHTML = `
-            <div class="divmidiinfo">
-                <p class="midiname"><a href="/midi?m=${midiNameUrl}" style="color: inherit; text-decoration: none;">${formatFileName(file.name)}</a></p>
-                <p class="duration"></p>
-            </div>
-            <button class="play-button" data-url="${file.download_url}">►</button>
-            <div class="PlayMusicPos"></div>
-            <button class="copy-button" data-url="https://thewildwestmidis.github.io/midis/${midiNameUrl}">Copy Midi Data</button>
-            <button class="${isFavorite ? 'remove-favorite-button' : 'favorite-button'}" data-file='${JSON.stringify(file)}'>
-                ${isFavorite ? 'Unfavorite' : 'Favorite'}
-            </button>
-        `;
+                <div class="divmidiinfo">
+                    <p class="midiname"><a href="/midi?m=${midiNameUrl}" style="color: inherit; text-decoration: none;">${formatFileName(file.name)}</a></p>
+                    <p class="duration"></p>
+                </div>
+                <button class="play-button" data-url="https://thewildwestmidis.github.io/midis/${midiNameUrl}">►</button>
+                <div class="PlayMusicPos"></div>
+                <button class="copy-button" data-url="https://thewildwestmidis.github.io/midis/${midiNameUrl}">Copy Midi Data</button>
+                <button class="${isFavorite ? 'remove-favorite-button' : 'favorite-button'}" data-file='${JSON.stringify(file)}'>
+                    ${isFavorite ? 'Unfavorite' : 'Favorite'}
+                </button>
+            `;
 
             fileListContainer.appendChild(listItem);
 
