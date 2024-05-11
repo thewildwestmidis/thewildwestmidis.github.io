@@ -67,23 +67,23 @@ async function displayFileList(files) {
 
 
     const durationPromises = files.map(async file => {
+        const listItem = document.createElement('li');
+        const isFavorite = favoriteFileNames.has(file.name);
+        const midiNameUrl = encodeURI(file.name);
+
         if (selectedmidi.includes(file.name)) {
             const listItem = document.createElement('li');
             const isFavorite = favoriteFileNames.has(file.name);
             listItem.innerHTML = `
             <div class="divmidiinfo">
-                <p class="midiname">${formatFileName(file.name)}</p>
+                <p class="midiname"><a href="/midi?m=${midiNameUrl}" style="color: inherit; text-decoration: none;">${formatFileName(file.name)}</a></p>
                 <p class="duration"></p>
             </div>
-            <button class="copy-button" data-url="${file.download_url}">Copy Midi Data</button>
+            <button class="copy-button" data-url="https://thewildwestmidis.github.io/midis/${midiNameUrl}">Copy Midi Data</button>
             <button class="${isFavorite ? 'remove-favorite-button' : 'favorite-button'}" data-file='${JSON.stringify(file)}'>
                 ${isFavorite ? 'Unfavorite' : 'Favorite'}
             </button>
-
-            <!--
-            <button class="stop-button" style="display: none">Stop</button>
-            -->
-            `;
+        `;
 
             fileListContainer.appendChild(listItem);
 
