@@ -76,7 +76,7 @@ async function displayFileList(files) {
             const isFavorite = favoriteFileNames.has(file.name);
             listItem.innerHTML = `
             <div class="divmidiinfo">
-                <p class="midiname"><a href="/midi?m=${midiNameUrl}" style="color: inherit; text-decoration: none;">${formatFileName(file.name)}</a></p>
+                <p class="midiname">${formatFileName(file.name)}</p>
                 <p class="duration"></p>
             </div>
             <button class="copy-button" data-url="https://thewildwestmidis.github.io/midis/${midiNameUrl}">Copy Midi Data</button>
