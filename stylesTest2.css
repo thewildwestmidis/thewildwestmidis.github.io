@@ -1,0 +1,419 @@
+/* Estilos para el encabezado */
+header {
+    text-align: center;
+    background-color: #41464d;
+    color: white;
+    border: 3px solid #474b4e;
+    border-radius: 30px;
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+body {
+    background-color: #35393e;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+h1,
+h2 {
+    font-family: 'Trebuchet MS', sans-serif;
+    /* Puedes cambiar "Times New Roman" por la fuente que prefieras */
+}
+
+hr {
+    border: 1px solid #5a5e6400;
+}
+
+a {
+    margin: 0;
+    color: #b7b7b7;
+    text-decoration: underline;
+}
+
+/* Estilos para el formulario de búsqueda */
+#search-form {
+    margin: 20px auto;
+    text-align: center;
+    border-radius: 10px;
+}
+
+#search-input {
+    padding: 7.5px;
+    width: 70%;
+    border-radius: 10px;
+    background-color: #424549d0;
+    color: rgb(255, 255, 255);
+    border: 0px solid #ddd;
+}
+
+#search-form button {
+    padding: 7.5px 15px;
+    background-color: #4f5155d0;
+    color: rgb(255, 255, 255);
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+#search-form button:hover {
+    background-color: #5a5e64;
+}
+
+#pagination {
+    margin: 20px auto;
+    text-align: center;
+    border-radius: 10px;
+}
+
+#pagination button {
+    padding: 7.5px 15px;
+    background-color: #4f5155d0;
+    color: rgb(255, 255, 255);
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin: 5px;
+}
+
+#pagination .active {
+    background-color: #61666d;
+}
+
+#pagination button:hover {
+    background-color: #5a5e64;
+}
+
+#paginationmain {
+    padding: 5px;
+    border-radius: 20px;
+    background-color: #424549e0;
+    /* Cambia este color al que desees */
+    border: 3px solid #474b4ee5;
+    text-align: center;
+    width: 50%;
+
+}
+
+/* Agrega estilos a los resultados de búsqueda */
+#file-list li {
+    margin: 10px;
+    padding: 15px;
+    border-radius: 20px;
+    background-color: #424549d5;
+    /* Cambia este color al que desees */
+    border: 3px solid #51555877;
+    justify-content: space-around;
+    align-items: auto;
+    text-align: auto;
+    list-style-position: inside;
+    display: flex;
+    justify-content: space-between;
+}
+
+.background {
+    border-radius: 20px;
+    background-color: #424549d5;
+    /* Cambia este color al que desees */
+    border: 3px solid #51555877;
+    align-items: center;
+}
+
+.copy-button {
+    padding: 5px 10px;
+    background-color: #4f5155ee;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: auto;
+}
+
+.copy-button:hover {
+    background-color: #5a5e64ee;
+}
+
+.play-button {
+    padding: 10px 10px;
+    background-color: rgba(0, 0, 0, 0);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.play-button:hover {
+    background-color: rgb(98, 101, 102);
+}
+
+.PlayMusicPos {
+    height: 50px;
+    margin-left: 10px;
+    margin-top: auto;
+    margin-bottom: 5px;
+}
+
+.Midi-player {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.Midi-player::part(control-panel) {
+    background-color: rgb(75, 80, 83);
+    border: 3px solid #515458ee;
+
+}
+
+.Midi-player::part(play-button) {
+    color: white;
+}
+
+.Midi-player::part(play-button):hover {
+    background-color: rgb(98, 101, 102);
+    border-radius: 10px;
+}
+
+/* cosa */
+
+#midiplayersection midi-player {
+    width: inherit;
+    display: block;
+    margin: 4px;
+    margin-bottom: 0;
+}
+
+#midiplayersection midi-player::part(control-panel) {
+    background-color: rgb(75, 80, 83);
+    border: 3px solid #515458;
+    border-radius: 10px 10px 0 0;
+    padding-bottom: -1px;
+}
+
+#midiplayersection midi-player::part(play-button) {
+    color: white;
+}
+
+#midiplayersection midi-player::part(play-button):hover {
+    background-color: rgb(98, 101, 102);
+    border-radius: 10px;
+}
+
+#midiplayersection midi-visualizer .piano-roll-visualizer {
+    background-color: rgb(75, 80, 83);
+
+    border-top: none;
+    border: 3px solid #515458;
+    border-radius: 0 0 10px 10px;
+    margin: 4px;
+    margin-top: 0;
+    overflow: auto;
+}
+
+#midiplayersection midi-visualizer svg rect.note {
+    opacity: 0.8;
+    stroke-width: 2;
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="0"] {
+    fill: rgb(21, 49, 68);
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="2"] {
+    fill: #3e2b1c;
+    /* Marrón oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="3"] {
+    fill: #152d44;
+    /* Azul oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="4"] {
+    fill: #001f3f;
+    /* Azul marino */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="5"] {
+    fill: #a3a120;
+    /* Amarillo verdoso */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="6"] {
+    fill: #d98600;
+    /* Naranja oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="7"] {
+    fill: #7b6b6b;
+    /* Gris oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-instrument="8"] {
+    fill: #444;
+    /* Gris */
+}
+
+
+#midiplayersection midi-visualizer svg rect.note.active[data-instrument="0"] {
+    fill: rgb(21, 49, 68);
+}
+
+#midiplayersection midi-visualizer svg rect.note.active[data-instrument="3"] {
+    fill: #152d44;
+    /* Azul oscuro */
+}
+
+#midiplayersection midi-visualizer svg rect.note.active[data-instrument="4"] {
+    fill: #001f3f;
+    /* Azul marino */
+}
+
+#midiplayersection midi-visualizer svg rect.note[data-is-drum="true"] {
+    fill: #888;
+    /* Gris */
+}
+
+
+
+#midiplayersection midi-visualizer svg rect.note.active {
+    opacity: 0.9;
+    stroke: rgba(184, 184, 184, 0.637);
+}
+
+/*
+
+.play-button-loading {
+    background-color: rgb(117, 135, 85);
+}
+.play-button-loading:hover {
+    background-color: rgb(126, 146, 90);
+}
+
+*/
+
+.stop-button {
+    padding: 5px 10px;
+    background-color: rgb(179, 84, 77);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.stop-button:hover {
+    background-color: rgb(146, 71, 67);
+}
+
+/* Estilos para el enlace de descarga copiados */
+.alert-message {
+    background-color: #f0f0f0;
+    padding: 10px;
+    text-align: center;
+    display: none;
+}
+
+.back-button {
+
+    padding: 5px 10px;
+    background-color: #ffffff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    width: 5%;
+}
+
+.back-button:hover {
+    background-color: #5a5e64;
+}
+
+.the-iframe {
+    padding: 5px 10px;
+    background-color: white;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.request-button {
+    padding: 1% 10px;
+    background-color: #4f5155;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    width: 20%;
+    height: 10%;
+}
+
+.request-button:hover {
+    background-color: #5a5e64;
+}
+
+.favorite-button {
+    padding: 5px 10px;
+    background-color: #7e8763;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.favorite-button:hover {
+    background-color: #a1b170;
+}
+
+.remove-favorite-button {
+    padding: 5px 10px;
+    background-color: #755250;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.remove-favorite-button:hover {
+    background-color: #653836;
+}
+
+.midiname {
+    margin-bottom: 0px;
+    margin: 0;
+    color: #ffffff;
+}
+
+.midinamef {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.duration {
+    font-size: 15px;
+    color: #a7aaad;
+    margin-top: 0px;
+    margin-top: 0px;
+    margin-bottom: 5px;
+}
+
+.divmidiinfo {
+    margin-top: 10px;
+}
+
+.aboutbox {
+    margin: 10px;
+    padding: 15px;
+    border-radius: 20px;
+    background-color: #424549e0;
+    /* Cambia este color al que desees */
+    border: 3px solid #51555877;
+    text-align: left;
+}

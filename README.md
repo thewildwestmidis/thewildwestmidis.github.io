@@ -2,9 +2,11 @@
 A page that has over 1k+ midis and useful features
 
 ## Features:
-It has a search bar on all the midis and the favorite page </br>
-It has a button to direclty copy the midi you want </br>
-It has a favorite button to see your favorite midis
+- A search bar for searching midis </br>
+- A button to direclty copy the midi data </br>
+- You can add midis to your favorite midis list
+- Midi Player and Visualizer </br>
+- More features!!
 
 
 ### Link: https://thewildwestmidis.github.io/
