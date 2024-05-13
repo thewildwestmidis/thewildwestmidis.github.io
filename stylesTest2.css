@@ -123,7 +123,7 @@ a {
 
 .copy-button {
     padding: 5px 10px;
-    background-color: #4f5155ee;
+    background-color: #55575c8a;
     color: white;
     border: none;
     cursor: pointer;
@@ -133,6 +133,53 @@ a {
 
 .copy-button:hover {
     background-color: #5a5e64ee;
+}
+
+.favorite-button {
+    padding: 5px 10px;
+    background-color: #dddf778a;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.favorite-button:hover {
+    background-color: #b8b96a;
+}
+
+.remove-favorite-button {
+    padding: 5px 10px;
+    background-color: #c449498a;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.remove-favorite-button:hover {
+    background-color: #772d2d;
+}
+
+.midiname {
+    margin-bottom: 0px;
+    margin: 0;
+    color: #ffffff;
+}
+
+.midinamef {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.duration {
+    font-size: 15px;
+    color: #a7aaad;
+    margin-top: 0px;
+    margin-top: 0px;
+    margin-bottom: 5px;
 }
 
 .play-button {
@@ -164,8 +211,8 @@ a {
 }
 
 .Midi-player::part(control-panel) {
-    background-color: rgb(75, 80, 83);
-    border: 3px solid #515458ee;
+    background-color: #50545a79;
+    border: 3px solid #4d4e5050;
 
 }
 
@@ -355,53 +402,6 @@ a {
 
 .request-button:hover {
     background-color: #5a5e64;
-}
-
-.favorite-button {
-    padding: 5px 10px;
-    background-color: #7e8763;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 10px;
-    margin-left: 10px;
-}
-
-.favorite-button:hover {
-    background-color: #a1b170;
-}
-
-.remove-favorite-button {
-    padding: 5px 10px;
-    background-color: #755250;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 10px;
-    margin-left: 10px;
-}
-
-.remove-favorite-button:hover {
-    background-color: #653836;
-}
-
-.midiname {
-    margin-bottom: 0px;
-    margin: 0;
-    color: #ffffff;
-}
-
-.midinamef {
-    margin-top: 15px;
-    margin-bottom: 15px;
-}
-
-.duration {
-    font-size: 15px;
-    color: #a7aaad;
-    margin-top: 0px;
-    margin-top: 0px;
-    margin-bottom: 5px;
 }
 
 .divmidiinfo {
