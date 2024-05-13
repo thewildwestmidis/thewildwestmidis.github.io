@@ -49,17 +49,31 @@ a {
     border: 0px solid #ddd;
 }
 
-#search-form button {
+#search-form button#Search {
     padding: 7.5px 15px;
     background-color: #4f5155d0;
     color: rgb(255, 255, 255);
     border: none;
     cursor: pointer;
     border-radius: 10px;
+    height: max-content;
 }
 
-#search-form button:hover {
+#search-form button#Search:hover {
     background-color: #5a5e64;
+}
+
+#search-form button#BackButton {
+    padding: 7.5px 15px;
+    background-color: #863a3ad0;
+    color: rgb(255, 255, 255);
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+#search-form button#BackButton:hover {
+    background-color: #a73d3dd0;
 }
 
 #pagination {
@@ -416,4 +430,24 @@ a {
     /* Cambia este color al que desees */
     border: 3px solid #51555877;
     text-align: left;
+}
+
+#background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    background-size: cover; /* Ajustar el tamaño de la imagen de fondo */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    height: 100%;
+    filter: blur(5px); /* Aplicar un desenfoque de 5px */
+    z-index: -1; /* Establecer el índice z detrás del contenido principal */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
