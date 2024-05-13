@@ -63,16 +63,19 @@ a {
     background-color: #5a5e64;
 }
 
-#search-form button#BackButton {
+#search-form a#BackButton {
+    text-decoration: none;
     padding: 7.5px 15px;
     background-color: #863a3ad0;
     color: rgb(255, 255, 255);
     border: none;
     cursor: pointer;
     border-radius: 10px;
+    font-size: 14px;
+    height: 10px;
 }
 
-#search-form button#BackButton:hover {
+#search-form a#BackButton:hover {
     background-color: #a73d3dd0;
 }
 
