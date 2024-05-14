@@ -63,24 +63,48 @@
       </iframe>
       <div class="background" style="width: 500px;">
       <p>Requests are usually accepted once every 2 to 4 days</p>
-      <p>Last request accepted: <span id="days">x</span> day, <span id="hours">x</span> hours ago</p>
-      </div>
-      <script>
-        async function fetchLastCommit() {
-          const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/commits/main');
-          const data = await response.json();
-          const lastCommitDate = new Date(data.commit.committer.date);
-          const now = new Date();
-          const timeDiff = Math.abs(now - lastCommitDate);
-          const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-          const hoursDiff = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      <p>Last requests acception: <span id="time-ago">calculating...</span> ago</p>
 
-          document.getElementById('days').textContent = daysDiff;
-          document.getElementById('hours').textContent = hoursDiff;
+      <script>
+        async function fetchLastAcceptance() {
+            const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/commits/main');
+            const data = await response.json();
+            const lastCommitDate = new Date(data.commit.committer.date);
+            const now = new Date();
+            const timeDiff = Math.abs(now - lastCommitDate);
+
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+            let timeAgoText = '';
+
+            if (days > 0) {
+                timeAgoText += `${days} day${days > 1 ? 's' : ''}`;
+                if (hours > 0) {
+                    timeAgoText += `, ${hours} hour${hours > 1 ? 's' : ''}`;
+                }
+            } else if (hours > 0) {
+                timeAgoText += `${hours} hour${hours > 1 ? 's' : ''}`;
+                if (minutes > 0) {
+                    timeAgoText += `, ${minutes} minute${minutes > 1 ? 's' : ''}`;
+                }
+            } else if (minutes > 0) {
+                timeAgoText += `${minutes} minute${minutes > 1 ? 's' : ''}`;
+                if (seconds > 0) {
+                    timeAgoText += `, ${seconds} second${seconds > 1 ? 's' : ''}`;
+                }
+            } else {
+                timeAgoText += `${seconds} second${seconds > 1 ? 's' : ''}`;
+            }
+
+            document.getElementById('time-ago').textContent = timeAgoText;
         }
 
-        fetchLastCommit();
-      </script>
+        fetchLastAcceptance();
+    </script>
+      </div>
       <br><br>
       <br>
       <br>
