@@ -11,41 +11,16 @@ function AddBackground() {
 
     // Establecer la imagen de fondo de acuerdo con el mes
     backgroundContainer.style.backgroundImage = "url('Images/Background/" + mesActual + ".png')";
-   
-    backgroundContainer.style.backgroundSize = "cover"; // Ajustar el tamaño de la imagen de fondo
-    backgroundContainer.style.position = "fixed";
-    backgroundContainer.style.position = "center";
-    backgroundContainer.style.top = "0";
-    backgroundContainer.style.left = "0";
-    backgroundContainer.style.width = "100%";
-    backgroundContainer.style.height = "100%";
-    backgroundContainer.style.filter = "blur(5px)"; // Aplicar un desenfoque de 5px
-    backgroundContainer.style.zIndex = "-1"; // Establecer el índice z detrás del contenido principal
-}
+   }
 
 function ChangeCSS() {
     var enlaceEstilos = document.getElementById('estilos');
-    enlaceEstilos.href = 'stylesTest2.css';
+    enlaceEstilos.href = 'stylesOld.css';
 }
 
-if (window.location.search.includes('test1a')) {
-    AddBackground()
-}
-
-if (window.location.search.includes('test1b')) {
-    AddBackground()
-    backgroundContainer.style.backgroundImage = "url('Images/Background/" + Math.floor(Math.random() * 11 + 1) + ".png')";
-}
-
-if (window.location.search.includes('test2a')) {
-    AddBackground()
+if (window.location.search.includes('OldStyles')) {
+    backgroundContainer.remove()
     ChangeCSS()
-    
 }
 
-if (window.location.search.includes('test2b')) {
-    AddBackground()
-    ChangeCSS()
-    backgroundContainer.style.backgroundImage = "url('Images/Background/" + Math.floor(Math.random() * 11 + 1) + ".png')";
-
-}
+AddBackground()
