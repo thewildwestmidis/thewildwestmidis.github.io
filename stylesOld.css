@@ -24,7 +24,7 @@ h2 {
 }
 
 hr {
-    border: 1px solid #5a5e6400;
+    border: 1px solid #5a5e64;
 }
 
 a {
@@ -44,39 +44,22 @@ a {
     padding: 7.5px;
     width: 70%;
     border-radius: 10px;
-    background-color: #424549d0;
+    background-color: #424549;
     color: rgb(255, 255, 255);
     border: 0px solid #ddd;
 }
 
-#search-form button#Search {
+#search-form button {
     padding: 7.5px 15px;
-    background-color: #4f5155d0;
+    background-color: #4f5155;
     color: rgb(255, 255, 255);
     border: none;
     cursor: pointer;
     border-radius: 10px;
-    height: max-content;
 }
 
-#search-form button#Search:hover {
+#search-form button:hover {
     background-color: #5a5e64;
-}
-
-#search-form a#BackButton {
-    text-decoration: none;
-    padding: 7.5px 15px;
-    background-color: #863a3ad0;
-    color: rgb(255, 255, 255);
-    border: none;
-    cursor: pointer;
-    border-radius: 10px;
-    font-size: 14px;
-    height: 10px;
-}
-
-#search-form a#BackButton:hover {
-    background-color: #a73d3dd0;
 }
 
 #pagination {
@@ -87,7 +70,7 @@ a {
 
 #pagination button {
     padding: 7.5px 15px;
-    background-color: #4f5155d0;
+    background-color: #4f5155;
     color: rgb(255, 255, 255);
     border: none;
     cursor: pointer;
@@ -106,9 +89,9 @@ a {
 #paginationmain {
     padding: 5px;
     border-radius: 20px;
-    background-color: #424549e0;
+    background-color: #424549;
     /* Cambia este color al que desees */
-    border: 3px solid #474b4ee5;
+    border: 3px solid #474b4e;
     text-align: center;
     width: 50%;
 
@@ -119,9 +102,9 @@ a {
     margin: 10px;
     padding: 15px;
     border-radius: 20px;
-    background-color: #424549d5;
+    background-color: #424549;
     /* Cambia este color al que desees */
-    border: 3px solid #51555877;
+    border: 3px solid #474b4e;
     justify-content: space-around;
     align-items: auto;
     text-align: auto;
@@ -130,17 +113,9 @@ a {
     justify-content: space-between;
 }
 
-.background {
-    border-radius: 20px;
-    background-color: #424549d5;
-    /* Cambia este color al que desees */
-    border: 3px solid #51555877;
-    align-items: center;
-}
-
 .copy-button {
     padding: 5px 10px;
-    background-color: #55575c8a;
+    background-color: #4f5155;
     color: white;
     border: none;
     cursor: pointer;
@@ -149,54 +124,7 @@ a {
 }
 
 .copy-button:hover {
-    background-color: #5a5e64ee;
-}
-
-.favorite-button {
-    padding: 5px 10px;
-    background-color: #dddf778a;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 10px;
-    margin-left: 10px;
-}
-
-.favorite-button:hover {
-    background-color: #b8b96a;
-}
-
-.remove-favorite-button {
-    padding: 5px 10px;
-    background-color: #c449498a;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 10px;
-    margin-left: 10px;
-}
-
-.remove-favorite-button:hover {
-    background-color: #772d2d;
-}
-
-.midiname {
-    margin-bottom: 0px;
-    margin: 0;
-    color: #ffffff;
-}
-
-.midinamef {
-    margin-top: 15px;
-    margin-bottom: 15px;
-}
-
-.duration {
-    font-size: 15px;
-    color: #a7aaad;
-    margin-top: 0px;
-    margin-top: 0px;
-    margin-bottom: 5px;
+    background-color: #5a5e64;
 }
 
 .play-button {
@@ -228,8 +156,8 @@ a {
 }
 
 .Midi-player::part(control-panel) {
-    background-color: #50545a79;
-    border: 3px solid #4d4e5050;
+    background-color: rgb(75, 80, 83);
+    border: 3px solid #515458;
 
 }
 
@@ -385,7 +313,7 @@ a {
 .back-button {
 
     padding: 5px 10px;
-    background-color: #ffffff;
+    background-color: #4f5155;
     color: white;
     border: none;
     cursor: pointer;
@@ -421,6 +349,53 @@ a {
     background-color: #5a5e64;
 }
 
+.favorite-button {
+    padding: 5px 10px;
+    background-color: #7e8763;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.favorite-button:hover {
+    background-color: #a1b170;
+}
+
+.remove-favorite-button {
+    padding: 5px 10px;
+    background-color: #755250;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.remove-favorite-button:hover {
+    background-color: #653836;
+}
+
+.midiname {
+    margin-bottom: 0px;
+    margin: 0;
+    color: #ffffff;
+}
+
+.midinamef {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.duration {
+    font-size: 15px;
+    color: #a7aaad;
+    margin-top: 0px;
+    margin-top: 0px;
+    margin-bottom: 5px;
+}
+
 .divmidiinfo {
     margin-top: 10px;
 }
@@ -429,28 +404,8 @@ a {
     margin: 10px;
     padding: 15px;
     border-radius: 20px;
-    background-color: #424549e0;
+    background-color: #424549;
     /* Cambia este color al que desees */
-    border: 3px solid #51555877;
+    border: 3px solid #474b4e;
     text-align: left;
-}
-
-#background-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
-    background-size: cover; /* Ajustar el tamaño de la imagen de fondo */
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 100%;
-    height: 100%;
-    filter: blur(5px); /* Aplicar un desenfoque de 5px */
-    z-index: -1; /* Establecer el índice z detrás del contenido principal */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
 }
