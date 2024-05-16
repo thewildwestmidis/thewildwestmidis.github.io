@@ -262,4 +262,6 @@ const searchTerm = urlParams.get('search');
 
 fetchMidiFiles(searchTerm);
 
-document.getElementById("bottom").style.display = "block";
+setTimeout(() => {
+    document.getElementById("bottom").style.display = "block";
+}, 500);
