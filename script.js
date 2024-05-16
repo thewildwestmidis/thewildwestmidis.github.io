@@ -3,6 +3,7 @@ const searchInput = document.getElementById('search-input');
 const fileListContainer = document.getElementById('file-list');
 const urlParams = new URLSearchParams(window.location.search);
 document.getElementById("BackButton").style.display = "none";
+document.getElementById("paginationmain").style.display = "none";
 
 // Obtener el término de búsqueda de los parámetros de la URL
 const searchTermFromURL = urlParams.get('search');
@@ -256,6 +257,8 @@ function copyToClipboard(text) {
     document.execCommand('copy');
     document.body.removeChild(tempInput);
 }
+
+document.getElementById("paginationmain").style.display = "block";
 
 // Llamar a la función para obtener y mostrar la lista de archivos MIDI
 const searchTerm = urlParams.get('search');
