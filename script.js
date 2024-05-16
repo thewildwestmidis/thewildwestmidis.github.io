@@ -257,10 +257,9 @@ function copyToClipboard(text) {
     document.body.removeChild(tempInput);
 }
 
-document.getElementById("bottom").style.display = "block";
-
 // Llamar a la función para obtener y mostrar la lista de archivos MIDI
 const searchTerm = urlParams.get('search');
-setTimeout(() => {
-    fetchMidiFiles(searchTerm);
-}, 100);
+
+fetchMidiFiles(searchTerm);
+
+document.getElementById("bottom").style.display = "block";
