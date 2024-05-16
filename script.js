@@ -96,6 +96,10 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         backButton.style.display = "inline"
         backButton.setAttribute("href","/")
     }
+
+    setTimeout(() => {
+        document.getElementById("bottom").style.display = "block";
+    }, 500);
 }
 
 function replaceSpaces(inputString) {
@@ -263,8 +267,5 @@ const searchTerm = urlParams.get('search');
 
 
 setTimeout(() => {
-    setTimeout(() => {
-        document.getElementById("bottom").style.display = "block";
-    }, 500);
     fetchMidiFiles(searchTerm);
 }, 100);
