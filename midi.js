@@ -88,31 +88,31 @@ async function displayFileList(files) {
             fileListContainer.appendChild(listItem);
 
 
-            // Cargar y mostrar la duración
-            try {
-                const savedDuration = localStorage.getItem(`midi_duration_${file.name}`);
-                if (savedDuration) {
-                    const durationDiv = listItem.querySelector('.duration');
-                    if (durationDiv) {
-                        durationDiv.textContent = savedDuration;
-                    }
-                } else {
-                    const midi = await Midi.fromUrl(file.download_url);
-                    const durationInSeconds = midi.duration;
-                    const minutes = Math.floor(durationInSeconds / 60);
-                    const seconds = Math.round(durationInSeconds % 60);
-                    const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
-                    const durationDiv = listItem.querySelector('.duration');
-                    if (durationDiv) {
-                        durationDiv.textContent = durationText;
-                    }
-
-                    // Guardar la duración en el almacenamiento local
-                    localStorage.setItem(`midi_duration_${file.name}`, durationText);
+        // Cargar y mostrar la duración
+        try {
+            const savedDuration = localStorage.getItem(`midi_duration_${file.name}`);
+            if (savedDuration) {
+                const durationDiv = listItem.querySelector('.duration');
+                if (durationDiv) {
+                    durationDiv.textContent = savedDuration;
                 }
-            } catch (error) {
-                console.error('Error loading duration of midi:', file.name, ' - ', error);
+            } else {
+                const midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/"+midiNameUrl);
+                const durationInSeconds = midi.duration;
+                const minutes = Math.floor(durationInSeconds / 60);
+                const seconds = Math.round(durationInSeconds % 60);
+                const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
+                const durationDiv = listItem.querySelector('.duration');
+                if (durationDiv) {
+                    durationDiv.textContent = durationText;
+                }
+
+                // Guardar la duración en el almacenamiento local
+                localStorage.setItem(`midi_duration_${file.name}`, durationText);
             }
+        } catch (error) {
+            console.warn('Cant load duration of midi:', file.name, ' - ', error);
+        }
 
             document.body.getElementsByClassName("MidiName")[0].textContent = formatFileName(file.name)
             document.title = 'The Wild West Midis - Midi: ' + formatFileName(file.name)
