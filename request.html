@@ -62,48 +62,73 @@
         src="https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vSVPF9-i5ujMOAoFqo-5QYj-boje8J88RJaBA8cBBcTVHYpfu7NBGdVUfhD193MR3zq6jiKS5C30TdJ/pubhtml/sheet?headers=false&gid=661715213">
       </iframe>
       <div class="background" style="width: 500px;">
-      <p>Requests are usually accepted once every 2 to 4 days</p>
-      <p>Last requests acception: <span id="time-ago">calculating...</span> ago</p>
-
-      <script>
-        async function fetchLastAcceptance() {
-            const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/commits/main');
-            const data = await response.json();
-            const lastCommitDate = new Date(data.commit.committer.date);
-            const now = new Date();
-            const timeDiff = Math.abs(now - lastCommitDate);
-
-            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-            let timeAgoText = '';
-
-            if (days > 0) {
-                timeAgoText += `${days} day${days > 1 ? 's' : ''}`;
-                if (hours > 0) {
-                    timeAgoText += `, ${hours} hour${hours > 1 ? 's' : ''}`;
+        <p>Requests are usually accepted once every <span id="days1"></span> to <span id="days2"></span> days</p>
+        <p>Last requests acception: <span id="time-ago">calculating...</span> ago</p>
+        
+        <script>
+            async function fetchLastAcceptance() {
+                const response = await fetch('https://api.github.com/repos/thewildwestmidis/midis/commits?per_page=100');
+                const data = await response.json();
+                const midiRequests = data.filter(commit => commit.commit.message.startsWith("Midi request"));
+        
+                if (midiRequests.length === 0) {
+                    document.getElementById('time-ago').textContent = 'No requests found';
+                    return;
                 }
-            } else if (hours > 0) {
-                timeAgoText += `${hours} hour${hours > 1 ? 's' : ''}`;
-                if (minutes > 0) {
-                    timeAgoText += `, ${minutes} minute${minutes > 1 ? 's' : ''}`;
+        
+                const dates = midiRequests.map(commit => new Date(commit.commit.committer.date));
+                dates.sort((a, b) => a - b);
+        
+                let totalDiff = 0;
+                for (let i = 1; i < dates.length; i++) {
+                    const diff = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
+                    totalDiff += diff;
                 }
-            } else if (minutes > 0) {
-                timeAgoText += `${minutes} minute${minutes > 1 ? 's' : ''}`;
-                if (seconds > 0) {
-                    timeAgoText += `, ${seconds} second${seconds > 1 ? 's' : ''}`;
+        
+                const avgDays = totalDiff / (dates.length - 1);
+                const days1 = Math.round(avgDays) - 1;
+                const days2 = Math.round(avgDays) + 1;
+        
+                document.getElementById('days1').textContent = days1;
+                document.getElementById('days2').textContent = days2;
+        
+                const lastCommitDate = dates[dates.length - 1];
+                const now = new Date();
+                const timeDiff = Math.abs(now - lastCommitDate);
+        
+                const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        
+                let timeAgoText = '';
+        
+                if (days > 0) {
+                    timeAgoText += `${days} day${days > 1 ? 's' : ''}`;
+                    if (hours > 0) {
+                        timeAgoText += `, ${hours} hour${hours > 1 ? 's' : ''}`;
+                    }
+                } else if (hours > 0) {
+                    timeAgoText += `${hours} hour${hours > 1 ? 's' : ''}`;
+                    if (minutes > 0) {
+                        timeAgoText += `, ${minutes} minute${minutes > 1 ? 's' : ''}`;
+                    }
+                } else if (minutes > 0) {
+                    timeAgoText += `${minutes} minute${minutes > 1 ? 's' : ''}`;
+                    if (seconds > 0) {
+                        timeAgoText += `, ${seconds} second${seconds > 1 ? 's' : ''}`;
+                    }
+                } else {
+                    timeAgoText += `${seconds} second${seconds > 1 ? 's' : ''}`;
                 }
-            } else {
-                timeAgoText += `${seconds} second${seconds > 1 ? 's' : ''}`;
+        
+                document.getElementById('time-ago').textContent = timeAgoText;
             }
-
-            document.getElementById('time-ago').textContent = timeAgoText;
-        }
-
-        fetchLastAcceptance();
-    </script>
+        
+            fetchLastAcceptance();
+        </script>
+        
+        
       </div>
       <br><br>
       <br>
