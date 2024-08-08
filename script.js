@@ -167,6 +167,7 @@ async function displayFileList(files) {
         const listItem = document.createElement('li');
         const isFavorite = favoriteFileNames.has(file.name);
         const midiNameUrl = encodeURI(file.name);  // Ensure the file name is URL encoded
+        console.log(midiNameUrl)
         const repoName = file.repo === 'thewildwestmidis/midis' ? 'thewildwestmidis/midis' : file.repo;
 
         listItem.innerHTML = `
@@ -225,7 +226,7 @@ async function displayFileList(files) {
 
             if (url.includes('thewildwestmidis/midis')) {
                 url = url.replace('https://raw.githubusercontent.com/thewildwestmidis/midis/main/','');
-                fullUrl = `https://thewildwestmidis.github.io/midis/${encodeURIComponent(url)}`;
+                fullUrl = `https://thewildwestmidis.github.io/midis/${url}`;
             }
 
             copyToClipboard(fullUrl);

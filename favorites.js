@@ -231,7 +231,7 @@ async function displayFileList(files) {
 
             if (url.includes('thewildwestmidis/midis')) {
                 url = url.replace('https://raw.githubusercontent.com/thewildwestmidis/midis/main/', '');
-                fullUrl = `https://thewildwestmidis.github.io/midis/${encodeURIComponent(url)}`;
+                fullUrl = `https://thewildwestmidis.github.io/midis/${url}`;
             }
 
             copyToClipboard(fullUrl);

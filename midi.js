@@ -167,12 +167,18 @@ async function displayFileList(files) {
         };
     });
 
-
     const copyButtons = document.querySelectorAll('.copy-button');
     copyButtons.forEach(button => {
         button.addEventListener('click', async function () {
-            const url = this.getAttribute('data-url');
-            copyToClipboard(url);
+            let url = this.getAttribute('data-url');
+            let fullUrl = url;
+
+            if (url.includes('thewildwestmidis/midis')) {
+                url = url.replace('https://raw.githubusercontent.com/thewildwestmidis/midis/main/','');
+                fullUrl = `https://thewildwestmidis.github.io/midis/${url}`;
+            }
+
+            copyToClipboard(fullUrl);
 
             button.textContent = 'Copied!';
             await new Promise(resolve => setTimeout(() => {
