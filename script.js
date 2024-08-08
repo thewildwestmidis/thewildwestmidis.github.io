@@ -136,7 +136,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         // Agregar botón de retroceso para búsquedas
         const backButton = document.getElementById("BackButton")
         backButton.style.display = "inline"
-        backButton.setAttribute("href","/favorites")
+        backButton.setAttribute("href","/")
     }
 
     setTimeout(() => {

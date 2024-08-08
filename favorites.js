@@ -89,9 +89,9 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
             filteredFiles = allFiles.filter(file => file.formattedName.toLowerCase().includes(lowerCaseSearchTerm));
         }
 
-        
-                // Filtrar por favoritos
-                filteredFiles = filteredFiles.filter(file => favoriteFileNames.has(file.name));
+
+        // Filtrar por favoritos
+        filteredFiles = filteredFiles.filter(file => favoriteFileNames.has(file.name));
 
 
         console.log(allFiles)
@@ -141,7 +141,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         // Agregar botón de retroceso para búsquedas
         const backButton = document.getElementById("BackButton")
         backButton.style.display = "inline"
-        backButton.setAttribute("href", "/")
+        backButton.setAttribute("href", "/favorites")
     }
 
     setTimeout(() => {
@@ -164,7 +164,7 @@ async function displayFileList(files) {
     fileListContainer.innerHTML = '';
 
     if (files.length === 0) {
-        fileListContainer.innerHTML = '<p>No results found.</p>';
+        fileListContainer.innerHTML = '<p>No favorites found, you can add favorites <a href="/">here</a>.</p>';
         return;
     }
 
