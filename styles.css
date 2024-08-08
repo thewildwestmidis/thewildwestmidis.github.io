@@ -454,3 +454,52 @@ a {
     background-repeat: no-repeat;
     background-size: cover;
 }
+
+#repo-url {
+    padding: 7.5px;
+    width: 70%;
+    border-radius: 10px;
+    background-color: #424549d0;
+    color: rgb(255, 255, 255);
+    border: 0px solid #ddd;
+}
+
+button#submit {
+    padding: 7.5px 15px;
+    background-color: #4f5155d0;
+    color: rgb(255, 255, 255);
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    height: max-content;
+}
+
+/* Agrega estilos a los resultados de búsqueda */
+#repo-list > li {
+    margin: 10px;
+    padding: 15px;
+    border-radius: 20px;
+    background-color: #424549d5;
+    /* Cambia este color al que desees */
+    border: 3px solid #51555877;
+    justify-content: space-around;
+    align-items: auto;
+    text-align: auto;
+    list-style-position: inside;
+    display: flex;
+    justify-content: space-between;
+}
+
+.remove-button {
+    padding: 5px 10px;
+    background-color: #c449498a;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+.remove-button:hover {
+    background-color: #772d2d;
+}

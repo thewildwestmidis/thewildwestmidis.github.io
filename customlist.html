@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles.css" id="estilos">
+    <link rel="icon" href="Icon/Icon 96.ico">
+
+    <title>The Wild West Midis - Custom Midis</title>
+    <meta name="description" content="The best midi list for The Wild West! 1k+ Midis, Directly copy MIDI Data. Search, set favorites, preview midis and more! By Bertogim">
+    
+    <!-- Discord Embed -->
+    <meta content="The Wild West Midis - 1k+ Midis!" property="og:title" />
+    <meta content="https://thewildwestmidis.github.io" property="og:url">
+    <meta content="The best midi list for the wild west! 1k+ Midis, Directly copy MIDI Data, a search bar a favorites section, a midi player and visualizer, midi requests and more! By Bertogim" property="og:description" />
+    <meta content="https://thewildwestmidis.github.io/Icon/Icon%20Full.png" property="og:image" />
+    <meta name="theme-color" content="#FFFF00">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TVB1MLE2Z"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-4TVB1MLE2Z');
+    </script>
+
+</head>
+
+<body>
+    <header>
+        <div style="display: flex; justify-content: left; gap: 20px;">
+            <h2 style="margin: 0;"></h2>The Wild West Midis</h2>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="/" target="" style="color: inherit; text-decoration: underline;">All midis</a>
+            </p>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="/tutorial" style="color: inherit; text-decoration: underline;">How to play music</a>
+            </p>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="/request" target="" style="color: inherit; text-decoration: underline;">Request Midis</a>
+            </p>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="/favorites" target="" style="color: inherit; text-decoration: underline;">Your Favorites</a>
+            </p>
+            <p style="margin: 0; color: #b7b7b7;">
+                <a href="/about" target="" style="color: inherit; text-decoration: underline;">About</a>
+            </p>
+        </div>
+    </header>
+
+    <center>
+        <h1>Manage Custom MIDI Repositories</h1>
+
+        <form id="repo-form" style="margin-bottom: 20px;">
+            <input type="text" id="repo-url" placeholder="Enter GitHub repo URL or user/repo" required>
+            <button type="submit" id="submit">Add Repository</button>
+        </form>
+        <p id="success-message" style="display:none; color: green;">Repository added successfully!</p>
+        <p id="error-message" style="display:none; color: red;">Repository already exists!</p>
+    </center>
+
+    <div id="file-list-container">
+        <center>
+            <h2>Added Repositories</h2>
+        </center>
+        <ul id="repo-list" class="file-list">
+            <!-- List of repos will be dynamically generated here -->
+        </ul>
+    </div>
+    <br><br>
+
+    <center>
+        <div class="background" style="width: 700px;">
+            <h2>Info</h2>
+
+            <p>These repositories aren't shared between computers</p>
+            <p>To make a repository, create an account on github, make a repository and upload any midis to it</p>
+            <p>Custom repositories should appear before the default one</p>
+        </div>
+        <br>
+    </center>
+
+
+    <script src="background.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => {
+            const repoForm = document.getElementById('repo-form');
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+            const repoList = document.getElementById('repo-list');
+
+            const DEFAULT_REPO = 'thewildwestmidis/midis'; // Repositorio por defecto
+
+            function getRepoName(url) {
+                const match = url.match(/github\.com\/([^\/]+\/[^\/]+)/);
+                return match ? match[1] : url;
+            }
+
+            async function countMidiFiles(repoName) {
+                try {
+                    const response = await fetch(`https://api.github.com/repos/${repoName}/git/trees/main?recursive=1`);
+                    const data = await response.json();
+                    if (!data.tree) return 0;
+                    const midiFiles = data.tree.filter(item => item.path.endsWith('.midi') || item.path.endsWith('.mid'));
+                    return midiFiles.length;
+                } catch (error) {
+                    console.error('Error fetching MIDI files:', error);
+                    return 0;
+                }
+            }
+
+            async function updateRepoList() {
+                let repos = JSON.parse(localStorage.getItem('customRepos')) || [];
+
+                // Asegúrate de que el repositorio por defecto siempre esté presente
+                if (!repos.includes(DEFAULT_REPO)) {
+                    repos.push(DEFAULT_REPO);
+                    localStorage.setItem('customRepos', JSON.stringify(repos));
+                }
+
+                repoList.innerHTML = '';
+
+                if (repos.length === 0) {
+                    repoList.innerHTML = '<p style="text-align: center;">No custom repositories added yet.</p>';
+                } else {
+                    for (const repo of repos) {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'file-list-item';
+
+                        // Contar archivos MIDI
+                        const midiCount = await countMidiFiles(repo);
+
+                        listItem.innerHTML = `
+                        <div class="divmidiinfo">
+                            <p class="midiname">${repo}</p>
+                            <p class="duration">${midiCount} midis</p>
+                        </div>
+                        ${repo !== DEFAULT_REPO ? '<button class="remove-button">Remove</button>' : ''}
+                    `;
+
+                        const removeButton = listItem.querySelector('.remove-button');
+                        if (removeButton) {
+                            removeButton.addEventListener('click', () => {
+                                const updatedRepos = repos.filter(r => r !== repo);
+                                localStorage.setItem('customRepos', JSON.stringify(updatedRepos));
+                                updateRepoList();
+                            });
+                        }
+
+                        repoList.appendChild(listItem);
+                    }
+                }
+            }
+
+            repoForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                let repoUrl = document.getElementById('repo-url').value.trim();
+                const repoName = getRepoName(repoUrl);
+
+                if (repoName) {
+                    let repos = JSON.parse(localStorage.getItem('customRepos')) || [];
+
+                    if (!repos.includes(repoName) && repoName !== DEFAULT_REPO) {
+                        repos.push(repoName);
+                        localStorage.setItem('customRepos', JSON.stringify(repos));
+                        successMessage.style.display = 'block';
+                        errorMessage.style.display = 'none';
+                        await updateRepoList();
+                    } else {
+                        errorMessage.style.display = 'block';
+                        successMessage.style.display = 'none';
+                    }
+                }
+
+                document.getElementById('repo-url').value = '';
+            });
+
+            // Initialize the list on page load
+            updateRepoList();
+        });
+    </script>
+</body>
+
+</html>
