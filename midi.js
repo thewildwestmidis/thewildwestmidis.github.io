@@ -89,7 +89,7 @@ async function displayFileList(files) {
     }
 
     const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
-    const isOriginalOnly = customRepos.length === 0;
+    const isOriginalOnly = customRepos.length === 1;
 
     // Cargar el objeto de duraciones de MIDIs desde localStorage
     let midiDurations = JSON.parse(localStorage.getItem('midiDurations')) || {};
