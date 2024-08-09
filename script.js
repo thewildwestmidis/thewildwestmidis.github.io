@@ -243,35 +243,13 @@ async function displayFileList(files) {
 
             gtag('event', 'copy_midi_' + decodeURI(url), {
                 event_category: 'Midi',
-                event_label: repo,
+                event_label: decodeURI(url),
                 value: 1
             });
 
             await new Promise(resolve => setTimeout(() => {
                 button.textContent = 'Copy Midi Data';
             }, 1000));
-        });
-    });
-
-    const playButtons = document.querySelectorAll('.play-button');
-
-    playButtons.forEach((playButton, index) => {
-        playButton.addEventListener('click', async function () {
-            const url = this.getAttribute('data-url');
-            const midiplayer = createElementFromHTML('<midi-player class="Midi-player" sound-font visualizer="#myVisualizer"></midi-player>');
-            midiplayer.setAttribute("src", url);
-            playButton.parentElement.getElementsByClassName("PlayMusicPos")[0].appendChild(midiplayer);
-            playButton.remove()
-
-            gtag('event', 'play_midi_' + decodeURI(url), {
-                event_category: 'Midi',
-                event_label: repo,
-                value: 1
-            });
-
-            midiplayer.addEventListener('load', () => {
-                midiplayer.start();
-            });
         });
     });
 
@@ -290,7 +268,7 @@ async function displayFileList(files) {
 
                 gtag('event', 'favorite_midi_' + decodeURI(url), {
                     event_category: 'Midi',
-                    event_label: repo,
+                    event_label: decodeURI(url),
                     value: 1
                 });
             } else {
@@ -327,7 +305,27 @@ async function displayFileList(files) {
         });
     });
 
+    const playButtons = document.querySelectorAll('.play-button');
 
+    playButtons.forEach((playButton, index) => {
+        playButton.addEventListener('click', async function () {
+            const url = this.getAttribute('data-url');
+            const midiplayer = createElementFromHTML('<midi-player class="Midi-player" sound-font visualizer="#myVisualizer"></midi-player>');
+            midiplayer.setAttribute("src", url);
+            playButton.parentElement.getElementsByClassName("PlayMusicPos")[0].appendChild(midiplayer);
+            playButton.remove()
+
+            gtag('event', 'play_midi_' + decodeURI(url), {
+                event_category: 'Midi',
+                event_label: repo,
+                value: 1
+            });
+
+            midiplayer.addEventListener('load', () => {
+                midiplayer.start();
+            });
+        });
+    });
 }
 
 function copyToClipboard(text) {

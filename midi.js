@@ -190,7 +190,7 @@ async function displayFileList(files) {
 
             gtag('event', 'copy_midi_' + decodeURI(url), {
                 event_category: 'Midi',
-                event_label: repo,
+                event_label: decodeURI(url),
                 value: 1
             });
 
@@ -215,7 +215,7 @@ async function displayFileList(files) {
 
                 gtag('event', 'favorite_midi_' + decodeURI(url), {
                     event_category: 'Midi',
-                    event_label: repo,
+                    event_label: decodeURI(url),
                     value: 1
                 });
             } else {
