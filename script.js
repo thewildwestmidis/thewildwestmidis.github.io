@@ -13,7 +13,7 @@ if (searchTermFromURL) {
 function createElementFromHTML(htmlString) {
     var div = document.createElement('div');
     div.innerHTML = htmlString.trim();
-  
+
     // Change this to div.childNodes to support multiple top-level nodes.
     return div.firstChild;
 }
@@ -38,15 +38,15 @@ let currentPage = 1;
 function formatFileName(text) {
     // Reemplazar "_" por espacio
     text = text.replace(/_/g, ' ');
-  
+
     // Eliminar "-" si hay texto a ambos lados
     text = text.replace(/([^ ])-([^ ])/g, '$1 $2');
-  
+
     // Eliminar ".mid"
     text = text.replace(/\.mid/g, '');
-  
+
     return text;
-  }
+}
 
 async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
     try {
@@ -58,16 +58,16 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
         for (const repo of customRepos) {
             if (repo !== defaultRepo) {
                 const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`);
-            const data = await response.json();
-            const repoFiles = data.tree.map(item => ({
-                ...item,
-                name: item.path,
-                repo: repo,
-                formattedName: formatFileName(item.path) // Guardar el nombre formateado
-            }));
+                const data = await response.json();
+                const repoFiles = data.tree.map(item => ({
+                    ...item,
+                    name: item.path,
+                    repo: repo,
+                    formattedName: formatFileName(item.path) // Guardar el nombre formateado
+                }));
 
-            allFiles = allFiles.concat(repoFiles.filter(item => item.name.endsWith('.mid')));
-        }
+                allFiles = allFiles.concat(repoFiles.filter(item => item.name.endsWith('.mid')));
+            }
         }
 
         // Cargar archivos del repositorio original después
@@ -136,7 +136,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         // Agregar botón de retroceso para búsquedas
         const backButton = document.getElementById("BackButton")
         backButton.style.display = "inline"
-        backButton.setAttribute("href","/")
+        backButton.setAttribute("href", "/")
     }
 
     setTimeout(() => {
@@ -151,7 +151,7 @@ function replaceSpaces(inputString) {
 
 async function displayFileList(files) {
     const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
-    const isOriginalOnly = customRepos.length === 1;
+    const isOriginalOnly = customRepos.length <= 1;
 
 
     // Cargar el objeto de duraciones de MIDIs desde localStorage
@@ -168,7 +168,6 @@ async function displayFileList(files) {
         const listItem = document.createElement('li');
         const isFavorite = favoriteFileNames.has(file.name);
         const midiNameUrl = encodeURI(file.name);  // Ensure the file name is URL encoded
-        console.log(midiNameUrl)
         const repoName = file.repo === 'thewildwestmidis/midis' ? 'thewildwestmidis/midis' : file.repo;
 
         listItem.innerHTML = `
@@ -191,7 +190,14 @@ async function displayFileList(files) {
             const savedDuration = midiDurations[file.name];
             if (!savedDuration) {
                 // Cargar la duración del MIDI si no está en el localStorage
-                const midi = await Midi.fromUrl(`https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`);
+                let midi
+
+                if (isOriginalOnly) {
+                    midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/" + midiNameUrl);
+                } else {
+                    midi = await Midi.fromUrl(`https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`);
+                }
+
                 const durationInSeconds = midi.duration;
                 const minutes = Math.floor(durationInSeconds / 60);
                 const seconds = Math.round(durationInSeconds % 60);
@@ -216,6 +222,7 @@ async function displayFileList(files) {
         } catch (error) {
             console.warn('Cannot load duration of midi:', file.name, ' - ', error);
         }
+
     }
 
 
@@ -226,7 +233,7 @@ async function displayFileList(files) {
             let fullUrl = url;
 
             if (url.includes('thewildwestmidis/midis')) {
-                url = url.replace('https://raw.githubusercontent.com/thewildwestmidis/midis/main/','');
+                url = url.replace('https://raw.githubusercontent.com/thewildwestmidis/midis/main/', '');
                 fullUrl = `https://thewildwestmidis.github.io/midis/${url}`;
             }
 
@@ -245,7 +252,7 @@ async function displayFileList(files) {
         playButton.addEventListener('click', async function () {
             const url = this.getAttribute('data-url');
             const midiplayer = createElementFromHTML('<midi-player class="Midi-player" sound-font visualizer="#myVisualizer"></midi-player>');
-            midiplayer.setAttribute("src",url);
+            midiplayer.setAttribute("src", url);
             playButton.parentElement.getElementsByClassName("PlayMusicPos")[0].appendChild(midiplayer);
             playButton.remove()
 
@@ -300,6 +307,8 @@ async function displayFileList(files) {
             localStorage.setItem('favorites', JSON.stringify(favorites));
         });
     });
+
+
 }
 
 function copyToClipboard(text) {
