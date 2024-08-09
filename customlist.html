@@ -147,6 +147,13 @@
                         if (removeButton) {
                             removeButton.addEventListener('click', () => {
                                 const updatedRepos = repos.filter(r => r !== repo);
+
+                                gtag('event', 'remove_repository_' + repo, {
+                                    event_category: 'Repository',
+                                    event_label: repo,  // El nombre del repositorio
+                                    value: 1
+                                });
+
                                 localStorage.setItem('customRepos', JSON.stringify(updatedRepos));
                                 updateRepoList();
                             });
@@ -171,6 +178,13 @@
                     if (midiCount > 0) {
                         if (!repos.includes(repoName) && repoName !== DEFAULT_REPO) {
                             repos.push(repoName);
+
+                            gtag('event', 'add_repository_' + repoName, {
+                                event_category: 'Repository',
+                                event_label: repoName,  // El nombre del repositorio
+                                value: 1
+                            });
+
                             localStorage.setItem('customRepos', JSON.stringify(repos));
                             successMessage.style.display = 'block';
                             errorMessage.style.display = 'none';

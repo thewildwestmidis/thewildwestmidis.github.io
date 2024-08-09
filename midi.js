@@ -187,13 +187,18 @@ async function displayFileList(files) {
             copyToClipboard(fullUrl);
 
             button.textContent = 'Copied!';
+
+            gtag('event', 'copy_midi_' + decodeURI(url), {
+                event_category: 'Midi',
+                event_label: repo,
+                value: 1
+            });
+
             await new Promise(resolve => setTimeout(() => {
                 button.textContent = 'Copy Midi Data';
             }, 1000));
         });
     });
-
-
 
     const favoriteButtons = document.querySelectorAll('.favorite-button');
     favoriteButtons.forEach(button => {
@@ -207,6 +212,12 @@ async function displayFileList(files) {
                 this.textContent = 'Favorite';
                 this.classList.remove('remove-favorite-button');
                 this.classList.add('favorite-button');
+
+                gtag('event', 'favorite_midi_' + decodeURI(url), {
+                    event_category: 'Midi',
+                    event_label: repo,
+                    value: 1
+                });
             } else {
                 favorites.push(fileData);
                 this.textContent = 'Unfavorite';
