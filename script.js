@@ -266,9 +266,9 @@ async function displayFileList(files) {
                 this.classList.remove('remove-favorite-button');
                 this.classList.add('favorite-button');
 
-                gtag('event', 'favorite_midi_' + decodeURI(url), {
+                gtag('event', 'favorite_midi_' + fileData.name, {
                     event_category: 'Midi',
-                    event_label: decodeURI(url),
+                    event_label: fileData.name,
                     value: 1
                 });
             } else {
@@ -317,7 +317,7 @@ async function displayFileList(files) {
 
             gtag('event', 'play_midi_' + decodeURI(url), {
                 event_category: 'Midi',
-                event_label: repo,
+                event_label: decodeURI(url),
                 value: 1
             });
 
