@@ -188,7 +188,7 @@ async function displayFileList(files) {
 
             button.textContent = 'Copied!';
 
-            gtag('event', 'copy_midi_' + decodeURI(url), {
+            gtag('event', 'copy_midi', {
                 event_category: 'Midi',
                 event_label: decodeURI(url),
                 value: 1
@@ -213,7 +213,7 @@ async function displayFileList(files) {
                 this.classList.remove('remove-favorite-button');
                 this.classList.add('favorite-button');
 
-                gtag('event', 'favorite_midi_' + fileData.name, {
+                gtag('event', 'favorite_midi', {
                     event_category: 'Midi',
                     event_label: fileData.name,
                     value: 1
