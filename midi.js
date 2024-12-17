@@ -19,9 +19,33 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 9999999) {
         const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
         let allFiles = [];
 
-        // Cargar archivos de los repositorios custom primero
-        for (const repo of customRepos) {
-            if (repo !== defaultRepo) {
+        const cacheDefaultDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+        const cacheCustomDuration = 1000; //* 60;
+
+        // Función para obtener archivos de un repositorio con caché
+        async function fetchRepoFiles(repo, isDefault = false) {
+            const cacheKey = `repoFiles_${repo}`;
+            const cachedData = localStorage.getItem(cacheKey);
+
+            // Verificar si hay datos en caché y si aún son válidos
+            if (cachedData) {
+                const cached = JSON.parse(cachedData);
+                const currentTime = new Date().getTime();
+
+                // Usar el tiempo de caché adecuado según si el repositorio es predeterminado o no
+                const cacheDuration = isDefault ? cacheDefaultDuration : cacheCustomDuration;
+
+                if (currentTime - cached.timestamp < cacheDuration) {
+                    console.log(`Using cache for ${repo}`);
+                    return cached.files;
+                }
+                console.log(`Cache for ${repo} expired`);
+            }
+
+            // Si no hay caché o está expirado, hacer la solicitud a la API
+            try {
+                console.log(`Using request for ${repo}`);
+
                 const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`);
                 const data = await response.json();
                 const repoFiles = data.tree.map(item => ({
@@ -31,21 +55,50 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 9999999) {
                     formattedName: formatFileName(item.path) // Guardar el nombre formateado
                 }));
 
-                allFiles = allFiles.concat(repoFiles.filter(item => item.name.endsWith('.mid')));
+                // Filtrar archivos MIDI
+                const midiFiles = repoFiles.filter(item => item.name.endsWith('.mid'));
+
+                // Guardar los archivos en caché
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    timestamp: new Date().getTime(),
+                    files: midiFiles
+                }));
+
+                return midiFiles;
+            } catch (error) {
+                console.error(`Error fetching files from ${repo}:`, error);
+
+                // En caso de error, intentar usar los archivos almacenados previamente (si hay)
+                if (cachedData) {
+                    const cached = JSON.parse(cachedData);
+                    return cached.files;
+                }
+
+                // Si no hay caché, retornar un array vacío
+                return [];
             }
         }
 
-        // Cargar archivos del repositorio original después
-        const response = await fetch(`https://api.github.com/repos/${defaultRepo}/git/trees/main?recursive=1`);
-        const data = await response.json();
-        const defaultFiles = data.tree.map(item => ({
-            ...item,
-            name: item.path,
-            repo: defaultRepo,
-            formattedName: formatFileName(item.path) // Guardar el nombre formateado
-        }));
+        // Cargar archivos de los repositorios custom primero
+        for (const repo of customRepos) {
+            if (repo !== defaultRepo) {
+                const repoFiles = await fetchRepoFiles(repo);
+                allFiles = allFiles.concat(repoFiles);
+            }
+        }
 
-        allFiles = allFiles.concat(defaultFiles.filter(item => item.name.endsWith('.mid')));
+        // Cargar archivos del repositorio original después (almacenado por 24 horas)
+        const defaultRepoFiles = await fetchRepoFiles(defaultRepo, true);
+        allFiles = allFiles.concat(defaultRepoFiles);
+
+        // Filtrar por término de búsqueda basado en el nombre formateado
+        let filteredFiles = allFiles;
+        if (searchTerm) {
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+            filteredFiles = allFiles.filter(file => file.formattedName.toLowerCase().includes(lowerCaseSearchTerm));
+        }
+
+        console.log(filteredFiles);
 
         if (searchTerm) {
             const filteredFiles = allFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
@@ -91,9 +144,6 @@ async function displayFileList(files) {
     const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
     const isOriginalOnly = customRepos.length <= 1;
 
-    // Cargar el objeto de duraciones de MIDIs desde localStorage
-    let midiDurations = JSON.parse(localStorage.getItem('midiDurations')) || {};
-
     const durationPromises = files.map(async file => {
         const isFavorite = favoriteFileNames.has(file.name);
         const midiNameUrl = encodeURI(file.name);
@@ -129,43 +179,56 @@ async function displayFileList(files) {
             document.getElementById("midiplayersection").appendChild(midiplayer);
             document.getElementById("midiplayersection").appendChild(midivisualizer);
 
+            //
 
-            // Cargar y mostrar la duración
-            try {
-                const savedDuration = midiDurations[file.name];
-                if (!savedDuration) {
-                    // Cargar la duración del MIDI si no está en el localStorage
-                    let midi
+            async function LoadMidiDuration(Name, Repo, durationDiv) {
+                await new Promise((resolve) => {
+                    // Cargar y mostrar la duración
+                    try {
+                        // Cargar el objeto de duraciones de MIDIs desde localStorage
+                        let midiDurations = JSON.parse(localStorage.getItem('midiDurations')) || {};
 
-                    if (isOriginalOnly) {
-                        midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/" + midiNameUrl);
-                    } else {
-                        midi = await Midi.fromUrl(`https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`);
+                        const savedDuration = midiDurations[Name];
+                        if (!savedDuration) {
+                            // Cargar la duración del MIDI si no está en el localStorage
+                            let midi
+
+                            if (isOriginalOnly) {
+                                midi = Midi.fromUrl("https://thewildwestmidis.github.io/midis/" + midiNameUrl);
+                            } else {
+                                midi = Midi.fromUrl(`https://raw.githubusercontent.com/${Repo}/main/${midiNameUrl}`);
+                            }
+                            const durationInSeconds = midi.duration;
+                            const minutes = Math.floor(durationInSeconds / 60);
+                            const seconds = Math.round(durationInSeconds % 60);
+                            const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
+
+                            // Actualizar el objeto midiDurations
+                            midiDurations[Name] = durationText;
+                            localStorage.setItem('midiDurations', JSON.stringify(midiDurations));
+
+                            // Actualizar el texto de la duración en el DOM
+                            if (durationDiv) {
+                                durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${durationText}`;
+                            }
+                        } else {
+                            // Si la duración ya está en localStorage, actualizar directamente
+                            if (durationDiv) {
+                                durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${savedDuration}`;
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Cannot load duration of midi:', Name, ' - ', error);
                     }
-                    const durationInSeconds = midi.duration;
-                    const minutes = Math.floor(durationInSeconds / 60);
-                    const seconds = Math.round(durationInSeconds % 60);
-                    const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
-
-                    // Actualizar el objeto midiDurations
-                    midiDurations[file.name] = durationText;
-                    localStorage.setItem('midiDurations', JSON.stringify(midiDurations));
-
-                    // Actualizar el texto de la duración en el DOM
-                    const durationDiv = listItem.querySelector('.duration');
-                    if (durationDiv) {
-                        durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${durationText}`;
-                    }
-                } else {
-                    // Si la duración ya está en localStorage, actualizar directamente
-                    const durationDiv = listItem.querySelector('.duration');
-                    if (durationDiv) {
-                        durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${savedDuration}`;
-                    }
-                }
-            } catch (error) {
-                console.warn('Cannot load duration of midi:', file.name, ' - ', error);
+                });
             }
+
+            const Name = file.Name
+            const Repo = file.repo
+            const durationDiv = listItem.querySelector('.duration');
+
+
+            LoadMidiDuration(Name, Repo, durationDiv);
 
             document.body.getElementsByClassName("MidiName")[0].textContent = formatFileName(file.name)
             document.title = 'The Wild West Midis - Midi: ' + formatFileName(file.name)
@@ -188,7 +251,7 @@ async function displayFileList(files) {
 
             button.textContent = 'Copied!';
 
-            gtag('event', 'copy_midi_'+decodeURI(url), {
+            gtag('event', 'copy_midi_' + decodeURI(url), {
                 event_category: 'Midi',
                 value: 1
             });
@@ -212,7 +275,7 @@ async function displayFileList(files) {
                 this.classList.remove('remove-favorite-button');
                 this.classList.add('favorite-button');
 
-                gtag('event', 'favorite_midi_'+fileData.name, {
+                gtag('event', 'favorite_midi_' + fileData.name, {
                     event_category: 'Midi',
                     value: 1
                 });

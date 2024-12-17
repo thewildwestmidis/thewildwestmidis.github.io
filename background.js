@@ -10,7 +10,7 @@ function AddBackground() {
     document.body.insertBefore(backgroundContainer, document.body.firstChild); // Insertar antes del primer elemento del body
 
     // Establecer la imagen de fondo de acuerdo con el mes
-    backgroundContainer.style.backgroundImage = "url('Images/Background/" + mesActual + ".png')";
+    backgroundContainer.style.backgroundImage = "url('Images/Background/" + mesActual + ".webp')";
    }
 
 function ChangeCSS() {

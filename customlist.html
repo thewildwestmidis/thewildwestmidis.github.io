@@ -42,9 +42,11 @@
             <p style="margin: 0; color: #b7b7b7;">
                 <a href="/tutorial" style="color: inherit; text-decoration: underline;">How to play music</a>
             </p>
+            <!--
             <p style="margin: 0; color: #b7b7b7;">
                 <a href="/request" target="" style="color: inherit; text-decoration: underline;">Request Midis</a>
             </p>
+            -->
             <p style="margin: 0; color: #b7b7b7;">
                 <a href="/favorites" target="" style="color: inherit; text-decoration: underline;">Your Favorites</a>
             </p>
@@ -101,15 +103,58 @@
                 return match ? match[1] : url;
             }
 
-            async function countMidiFiles(repoName) {
+            const cacheDefaultDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+            const cacheCustomDuration = 1000; //* 60;
+
+            // Función para contar los archivos MIDI de un repositorio con caché
+            async function countMidiFiles(repoName, defaultRepo = false) {
+                const cacheKey = `midiFileCount_${repoName}`;
+                const cachedData = localStorage.getItem(cacheKey);
+
+                // Verificar si hay datos en caché y si aún son válidos
+                if (cachedData) {
+                    const cached = JSON.parse(cachedData);
+                    const currentTime = new Date().getTime();
+
+                    // Usar el tiempo de caché adecuado según si el repositorio es predeterminado o no
+                    const cacheDuration = defaultRepo ? cacheDefaultDuration : cacheCustomDuration;
+
+                    if (currentTime - cached.timestamp < cacheDuration) {
+                        console.log(`Using cache for ${repoName}`);
+                        return cached.count;
+                    }
+                }
+
+                // Si no hay caché o está expirado, hacer la solicitud a la API
                 try {
+                    console.log(`Using request for ${repoName}`);
+
                     const response = await fetch(`https://api.github.com/repos/${repoName}/git/trees/main?recursive=1`);
                     const data = await response.json();
-                    if (!data.tree) return 0;
+                    if (!data.tree) return 0; // Si no hay árbol de archivos, devolver 0
+
+                    // Filtrar archivos .midi o .mid
                     const midiFiles = data.tree.filter(item => item.path.endsWith('.midi') || item.path.endsWith('.mid'));
-                    return midiFiles.length;
+
+                    // Guardar el conteo en caché
+                    const count = midiFiles.length;
+                    const currentTime = new Date().getTime();
+                    localStorage.setItem(cacheKey, JSON.stringify({
+                        timestamp: currentTime,
+                        count: count
+                    }));
+
+                    return count;
                 } catch (error) {
                     console.error('Error fetching MIDI files:', error);
+
+                    // En caso de error, intentar usar los datos almacenados previamente (si hay)
+                    if (cachedData) {
+                        const cached = JSON.parse(cachedData);
+                        return cached.count;
+                    }
+
+                    // Si no hay caché y ocurrió un error, retornar 0
                     return 0;
                 }
             }
@@ -133,7 +178,10 @@
                         listItem.className = 'file-list-item';
 
                         // Contar archivos MIDI
-                        const midiCount = await countMidiFiles(repo);
+                        let defaultRepo = false
+                        if (repo === "thewildwestmidis/midis") { defaultRepo = true }
+
+                        const midiCount = await countMidiFiles(repo, defaultRepo);
 
                         listItem.innerHTML = `
                         <div class="divmidiinfo">

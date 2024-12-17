@@ -85,7 +85,7 @@ a {
     border-radius: 10px;
 }
 
-#pagination button {
+#pagination button, #pagination input {
     padding: 7.5px 15px;
     background-color: #4f5155d0;
     color: rgb(255, 255, 255);
@@ -93,6 +93,12 @@ a {
     cursor: pointer;
     border-radius: 10px;
     margin: 5px;
+}
+
+#pagination input {
+    width:20px;
+    cursor: text;
+    text-align: center;
 }
 
 #pagination .active {
@@ -111,7 +117,7 @@ a {
     border: 3px solid #474b4ee5;
     text-align: center;
     width: 50%;
-
+    width: max-content;
 }
 
 /* Agrega estilos a los resultados de búsqueda */

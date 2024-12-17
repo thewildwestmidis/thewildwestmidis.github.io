@@ -54,9 +54,33 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
         const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
         let allFiles = [];
 
-        // Cargar archivos de los repositorios custom primero
-        for (const repo of customRepos) {
-            if (repo !== defaultRepo) {
+        const cacheDefaultDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+        const cacheCustomDuration = 1000; //* 60;
+
+        // Función para obtener archivos de un repositorio con caché
+        async function fetchRepoFiles(repo, isDefault = false) {
+            const cacheKey = `repoFiles_${repo}`;
+            const cachedData = localStorage.getItem(cacheKey);
+
+            // Verificar si hay datos en caché y si aún son válidos
+            if (cachedData) {
+                const cached = JSON.parse(cachedData);
+                const currentTime = new Date().getTime();
+
+                // Usar el tiempo de caché adecuado según si el repositorio es predeterminado o no
+                const cacheDuration = isDefault ? cacheDefaultDuration : cacheCustomDuration;
+
+                if (currentTime - cached.timestamp < cacheDuration) {
+                    console.log(`Using cache for ${repo}`);
+                    return cached.files;
+                }
+                console.log(`Cache for ${repo} expired`);
+            }
+
+            // Si no hay caché o está expirado, hacer la solicitud a la API
+            try {
+                console.log(`Using request for ${repo}`);
+
                 const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`);
                 const data = await response.json();
                 const repoFiles = data.tree.map(item => ({
@@ -66,21 +90,41 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
                     formattedName: formatFileName(item.path) // Guardar el nombre formateado
                 }));
 
-                allFiles = allFiles.concat(repoFiles.filter(item => item.name.endsWith('.mid')));
+                // Filtrar archivos MIDI
+                const midiFiles = repoFiles.filter(item => item.name.endsWith('.mid'));
+
+                // Guardar los archivos en caché
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    timestamp: new Date().getTime(),
+                    files: midiFiles
+                }));
+
+                return midiFiles;
+            } catch (error) {
+                console.error(`Error fetching files from ${repo}:`, error);
+
+                // En caso de error, intentar usar los archivos almacenados previamente (si hay)
+                if (cachedData) {
+                    const cached = JSON.parse(cachedData);
+                    return cached.files;
+                }
+
+                // Si no hay caché, retornar un array vacío
+                return [];
             }
         }
 
-        // Cargar archivos del repositorio original después
-        const response = await fetch(`https://api.github.com/repos/${defaultRepo}/git/trees/main?recursive=1`);
-        const data = await response.json();
-        const defaultFiles = data.tree.map(item => ({
-            ...item,
-            name: item.path,
-            repo: defaultRepo,
-            formattedName: formatFileName(item.path) // Guardar el nombre formateado
-        }));
+        // Cargar archivos de los repositorios custom primero
+        for (const repo of customRepos) {
+            if (repo !== defaultRepo) {
+                const repoFiles = await fetchRepoFiles(repo);
+                allFiles = allFiles.concat(repoFiles);
+            }
+        }
 
-        allFiles = allFiles.concat(defaultFiles.filter(item => item.name.endsWith('.mid')));
+        // Cargar archivos del repositorio original después (almacenado por 24 horas)
+        const defaultRepoFiles = await fetchRepoFiles(defaultRepo, true);
+        allFiles = allFiles.concat(defaultRepoFiles);
 
         // Filtrar por término de búsqueda basado en el nombre formateado
         let filteredFiles = allFiles;
@@ -89,7 +133,8 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
             filteredFiles = allFiles.filter(file => file.formattedName.toLowerCase().includes(lowerCaseSearchTerm));
         }
 
-        console.log(allFiles)
+        console.log(filteredFiles);
+
 
         // Ordenar archivos para mostrar primero los custom
         filteredFiles.sort((a, b) => {
@@ -112,37 +157,114 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
     }
 }
 
-
 function generatePagination(totalPages, currentPage, searchTerm) {
     const paginationContainer = document.getElementById('pagination');
     paginationContainer.innerHTML = '';
 
-    for (let i = 1; i <= totalPages; i++) {
+    const range = 2; // Cantidad de páginas mostradas a cada lado del input
+    
+    // Botón para ir a la página anterior
+    if (currentPage > 1) {
+        const prevButton = document.createElement('button');
+        prevButton.textContent = '←';
+        prevButton.addEventListener('click', () => {
+            fetchMidiFiles(searchTerm, currentPage - 1);
+            window.scrollTo(0, 0);
+        });
+        paginationContainer.appendChild(prevButton);
+    }
+
+    // Botón para ir a la primera página
+    if (currentPage >= range*2) {
+        const firstPageButton = document.createElement('button');
+        firstPageButton.textContent = '1';
+        firstPageButton.addEventListener('click', () => {
+            fetchMidiFiles(searchTerm, 1);
+            window.scrollTo(0, 0);
+        });
+        paginationContainer.appendChild(firstPageButton);
+    }
+
+    // Rango de páginas antes del input
+    const startPage = Math.max(1, currentPage - range);
+    for (let i = startPage; i < currentPage; i++) {
         const pageButton = document.createElement('button');
         pageButton.textContent = i;
         pageButton.addEventListener('click', () => {
             fetchMidiFiles(searchTerm, i);
             window.scrollTo(0, 0);
         });
-
-        if (i === currentPage) {
-            pageButton.classList.add('active');
-        }
-
         paginationContainer.appendChild(pageButton);
+    }
+
+    // Input para la página actual
+    const pageInput = document.createElement('input');
+    pageInput.type = 'text';
+    pageInput.value = "";
+    pageInput.placeholder = currentPage;
+    pageInput.classList.add('page-input');
+    pageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const page = parseInt(pageInput.value, 10);
+            if (!isNaN(page) && page >= 1 && page <= totalPages) {
+                fetchMidiFiles(searchTerm, page);
+                //window.scrollTo(0, 0);
+            } else {
+                alert(`Please enter a number between 1 and ${totalPages}`);
+            }
+        }
+    });
+    paginationContainer.appendChild(pageInput);
+
+    // Rango de páginas después del input
+    const endPage = Math.min(totalPages, currentPage + range);
+    
+    for (let i = currentPage + 1; i <= endPage; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.addEventListener('click', () => {
+            fetchMidiFiles(searchTerm, i);
+            window.scrollTo(0, 0);
+        });
+        paginationContainer.appendChild(pageButton);
+    }
+
+    // Botón para ir a la última página
+    if (currentPage <= totalPages-range-1) {
+        const lastPageButton = document.createElement('button');
+        lastPageButton.textContent = totalPages;
+        lastPageButton.addEventListener('click', () => {
+            fetchMidiFiles(searchTerm, totalPages);
+            window.scrollTo(0, 0);
+        });
+        paginationContainer.appendChild(lastPageButton);
+    }
+
+    
+    // Botón para ir a la página siguiente
+    if (currentPage < totalPages) {
+        const nextButton = document.createElement('button');
+        nextButton.textContent = '→';
+        nextButton.addEventListener('click', () => {
+            fetchMidiFiles(searchTerm, currentPage + 1);
+            window.scrollTo(0, 0);
+        });
+        paginationContainer.appendChild(nextButton);
     }
 
     if (searchTerm) {
         // Agregar botón de retroceso para búsquedas
-        const backButton = document.getElementById("BackButton")
-        backButton.style.display = "inline"
-        backButton.setAttribute("href", "/")
+        const backButton = document.getElementById('BackButton');
+        backButton.style.display = 'inline';
+        backButton.setAttribute('href', '/');
     }
 
     setTimeout(() => {
-        document.getElementById("bottom").style.display = "block";
+        document.getElementById('bottom').style.display = 'block';
     }, 500);
 }
+
+
 
 function replaceSpaces(inputString) {
     // Use the replace function with a regular expression to replace all spaces with %20
@@ -186,43 +308,51 @@ async function displayFileList(files) {
 
         fileListContainer.appendChild(listItem);
 
-        try {
-            const savedDuration = midiDurations[file.name];
-            if (!savedDuration) {
-                // Cargar la duración del MIDI si no está en el localStorage
-                let midi
 
-                if (isOriginalOnly) {
-                    midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/" + midiNameUrl);
+        async function LoadMidiDuration() {
+            // Cargar y mostrar la duración
+            try {
+                const savedDuration = midiDurations[file.name];
+                if (!savedDuration) {
+                    // Cargar la duración del MIDI si no está en el localStorage
+                    let midi
+
+                    if (isOriginalOnly) {
+                        midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/" + midiNameUrl);
+                    } else {
+                        midi = await Midi.fromUrl(`https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`);
+                    }
+                    const durationInSeconds = midi.duration;
+                    const minutes = Math.floor(durationInSeconds / 60);
+                    const seconds = Math.round(durationInSeconds % 60);
+                    const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
+
+                    // Actualizar el objeto midiDurations
+                    midiDurations[file.name] = durationText;
+                    localStorage.setItem('midiDurations', JSON.stringify(midiDurations));
+
+                    // Actualizar el texto de la duración en el DOM
+                    const durationDiv = listItem.querySelector('.duration');
+                    if (durationDiv) {
+                        durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${durationText}`;
+                    }
                 } else {
-                    midi = await Midi.fromUrl(`https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`);
+                    // Si la duración ya está en localStorage, actualizar directamente
+                    const durationDiv = listItem.querySelector('.duration');
+                    if (durationDiv) {
+                        durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${savedDuration}`;
+                    }
                 }
-
-                const durationInSeconds = midi.duration;
-                const minutes = Math.floor(durationInSeconds / 60);
-                const seconds = Math.round(durationInSeconds % 60);
-                const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
-
-                // Actualizar el objeto midiDurations
-                midiDurations[file.name] = durationText;
-                localStorage.setItem('midiDurations', JSON.stringify(midiDurations));
-
-                // Actualizar el texto de la duración en el DOM
-                const durationDiv = listItem.querySelector('.duration');
-                if (durationDiv) {
-                    durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${durationText}`;
-                }
-            } else {
-                // Si la duración ya está en localStorage, actualizar directamente
-                const durationDiv = listItem.querySelector('.duration');
-                if (durationDiv) {
-                    durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${savedDuration}`;
-                }
+            } catch (error) {
+                console.warn('Cannot load duration of midi:', file.name, ' - ', error);
             }
-        } catch (error) {
-            console.warn('Cannot load duration of midi:', file.name, ' - ', error);
         }
 
+
+
+        setTimeout(() => {
+            LoadMidiDuration();
+        }, 10); //Works as "Run in background"
     }
 
 
@@ -241,7 +371,7 @@ async function displayFileList(files) {
 
             button.textContent = 'Copied!';
 
-            gtag('event', 'copy_midi_'+decodeURI(url), {
+            gtag('event', 'copy_midi_' + decodeURI(url), {
                 event_category: 'Midi',
                 value: 1
             });
@@ -265,7 +395,7 @@ async function displayFileList(files) {
                 this.classList.remove('remove-favorite-button');
                 this.classList.add('favorite-button');
 
-                gtag('event', 'favorite_midi_'+fileData.name, {
+                gtag('event', 'favorite_midi_' + fileData.name, {
                     event_category: 'Midi',
                     value: 1
                 });
@@ -314,7 +444,7 @@ async function displayFileList(files) {
             playButton.remove()
             const fileName = url.split('/').pop();
 
-            gtag('event', 'play_midi_'+decodeURI(fileName), {
+            gtag('event', 'play_midi_' + decodeURI(fileName), {
                 event_category: 'Midi',
                 value: 1
             });
