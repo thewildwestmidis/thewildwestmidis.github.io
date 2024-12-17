@@ -133,6 +133,9 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 50) {
             filteredFiles = allFiles.filter(file => file.formattedName.toLowerCase().includes(lowerCaseSearchTerm));
         }
 
+        // Filtrar por favoritos
+        filteredFiles = filteredFiles.filter(file => favoriteFileNames.has(file.name));
+
         console.log(filteredFiles);
 
         // Ordenar archivos para mostrar primero los custom
@@ -256,7 +259,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         // Agregar botón de retroceso para búsquedas
         const backButton = document.getElementById('BackButton');
         backButton.style.display = 'inline';
-        backButton.setAttribute('href', '/');
+        backButton.setAttribute('href', '/favorites');
     }
 
     setTimeout(() => {
@@ -306,41 +309,50 @@ async function displayFileList(files) {
 
             fileListContainer.appendChild(listItem);
 
-            try {
-                const savedDuration = midiDurations[file.name];
-                if (!savedDuration) {
-                    // Cargar la duración del MIDI si no está en el localStorage
-                    let midi
-
-                    if (isOriginalOnly) {
-                        midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/" + midiNameUrl);
+            async function LoadMidiDuration() {
+                // Cargar y mostrar la duración
+                try {
+                    const savedDuration = midiDurations[file.name];
+                    if (!savedDuration) {
+                        // Cargar la duración del MIDI si no está en el localStorage
+                        let midi
+    
+                        if (isOriginalOnly) {
+                            midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/" + midiNameUrl);
+                        } else {
+                            midi = await Midi.fromUrl(`https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`);
+                        }
+                        const durationInSeconds = midi.duration;
+                        const minutes = Math.floor(durationInSeconds / 60);
+                        const seconds = Math.round(durationInSeconds % 60);
+                        const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
+    
+                        // Actualizar el objeto midiDurations
+                        midiDurations[file.name] = durationText;
+                        localStorage.setItem('midiDurations', JSON.stringify(midiDurations));
+    
+                        // Actualizar el texto de la duración en el DOM
+                        const durationDiv = listItem.querySelector('.duration');
+                        if (durationDiv) {
+                            durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${durationText}`;
+                        }
                     } else {
-                        midi = await Midi.fromUrl(`https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`);
+                        // Si la duración ya está en localStorage, actualizar directamente
+                        const durationDiv = listItem.querySelector('.duration');
+                        if (durationDiv) {
+                            durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${savedDuration}`;
+                        }
                     }
-                    const durationInSeconds = midi.duration;
-                    const minutes = Math.floor(durationInSeconds / 60);
-                    const seconds = Math.round(durationInSeconds % 60);
-                    const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
-
-                    // Actualizar el objeto midiDurations
-                    midiDurations[file.name] = durationText;
-                    localStorage.setItem('midiDurations', JSON.stringify(midiDurations));
-
-                    // Actualizar el texto de la duración en el DOM
-                    const durationDiv = listItem.querySelector('.duration');
-                    if (durationDiv) {
-                        durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${durationText}`;
-                    }
-                } else {
-                    // Si la duración ya está en localStorage, actualizar directamente
-                    const durationDiv = listItem.querySelector('.duration');
-                    if (durationDiv) {
-                        durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${savedDuration}`;
-                    }
+                } catch (error) {
+                    console.warn('Cannot load duration of midi:', file.name, ' - ', error);
                 }
-            } catch (error) {
-                console.warn('Cannot load duration of midi:', file.name, ' - ', error);
             }
+    
+    
+    
+            setTimeout(() => {
+                LoadMidiDuration();
+            }, 10); //Works as "Run in background"
         }
     }
 
