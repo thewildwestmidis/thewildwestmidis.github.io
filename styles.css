@@ -20,7 +20,6 @@ body {
 h1,
 h2 {
     font-family: 'Trebuchet MS', sans-serif;
-    /* Puedes cambiar "Times New Roman" por la fuente que prefieras */
 }
 
 hr {
@@ -79,10 +78,25 @@ a {
     background-color: #a73d3dd0;
 }
 
+#paginationmain {
+    padding: 5px;
+    border-radius: 20px;
+    background-color: #424549e0;
+    border: 3px solid #474b4ee5;
+    text-align: center;
+    width: max-content;
+    min-width: 300px;
+}
+
+#paginationmain h3 {
+    margin-top: 7px;
+}
+
 #pagination {
     margin: 20px auto;
     text-align: center;
     border-radius: 10px;
+    margin-bottom: 7px;
 }
 
 #pagination button, #pagination input {
@@ -109,17 +123,6 @@ a {
     background-color: #5a5e64;
 }
 
-#paginationmain {
-    padding: 5px;
-    border-radius: 20px;
-    background-color: #424549e0;
-    /* Cambia este color al que desees */
-    border: 3px solid #474b4ee5;
-    text-align: center;
-    width: 50%;
-    width: max-content;
-}
-
 /* Agrega estilos a los resultados de búsqueda */
 #file-list li {
     margin: 10px;
@@ -139,7 +142,6 @@ a {
 .background {
     border-radius: 20px;
     background-color: #424549d5;
-    /* Cambia este color al que desees */
     border: 3px solid #51555877;
     align-items: center;
 }
@@ -486,7 +488,6 @@ button#submit {
     padding: 15px;
     border-radius: 20px;
     background-color: #424549d5;
-    /* Cambia este color al que desees */
     border: 3px solid #51555877;
     justify-content: space-around;
     align-items: auto;
