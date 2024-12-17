@@ -172,7 +172,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         prevButton.textContent = '←';
         prevButton.addEventListener('click', () => {
             fetchMidiFiles(searchTerm, currentPage - 1);
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         });
         paginationContainer.appendChild(prevButton);
     }
@@ -183,7 +183,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         firstPageButton.textContent = '1';
         firstPageButton.addEventListener('click', () => {
             fetchMidiFiles(searchTerm, 1);
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         });
         paginationContainer.appendChild(firstPageButton);
     }
@@ -195,7 +195,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         pageButton.textContent = i;
         pageButton.addEventListener('click', () => {
             fetchMidiFiles(searchTerm, i);
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         });
         paginationContainer.appendChild(pageButton);
     }
@@ -211,7 +211,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
             const page = parseInt(pageInput.value, 10);
             if (!isNaN(page) && page >= 1 && page <= totalPages) {
                 fetchMidiFiles(searchTerm, page);
-                //window.scrollTo(0, 0);
+                window.scrollTo(0, 0);
             } else {
                 alert(`Please enter a number between 1 and ${totalPages}`);
             }
@@ -227,7 +227,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         pageButton.textContent = i;
         pageButton.addEventListener('click', () => {
             fetchMidiFiles(searchTerm, i);
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         });
         paginationContainer.appendChild(pageButton);
     }
@@ -238,7 +238,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         lastPageButton.textContent = totalPages;
         lastPageButton.addEventListener('click', () => {
             fetchMidiFiles(searchTerm, totalPages);
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         });
         paginationContainer.appendChild(lastPageButton);
     }
@@ -250,7 +250,7 @@ function generatePagination(totalPages, currentPage, searchTerm) {
         nextButton.textContent = '→';
         nextButton.addEventListener('click', () => {
             fetchMidiFiles(searchTerm, currentPage + 1);
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         });
         paginationContainer.appendChild(nextButton);
     }
