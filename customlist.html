@@ -218,6 +218,8 @@
 
                     // UI update
                     midiCountElement.textContent = `${midiCount} midis`;
+                    refreshButton.textContent = 'Cooldown...';
+
                     console.log(`[UI Updated] Displaying ${midiCount} midis`);
 
                 } catch (error) {
@@ -347,87 +349,6 @@
             function getRepoName(url) {
                 const match = url.match(/github\.com\/([^\/]+\/[^\/]+)/);
                 return match ? match[1] : url;
-            }
-
-            // Función para refrescar un repositorio específico
-            async function refreshRepository(repoName, listItem, isDefaultRepo = false) {
-                if (refreshCooldowns[repoName]) return;
-
-                refreshCooldowns[repoName] = true;
-                const refreshButton = listItem.querySelector('.refresh-button');
-                const midiCountElement = listItem.querySelector('.duration');
-
-                // Actualizar UI durante el refresh
-                refreshButton.disabled = true;
-                refreshButton.textContent = 'Refreshing...';
-                midiCountElement.textContent = 'Updating...';
-
-                try {
-                    console.log(`[${new Date().toISOString()}] Starting refresh for repository: ${repoName}`);
-
-                    const apiUrl = `https://api.github.com/repos/${repoName}/git/trees/main?recursive=1`;
-                    console.log(`[${new Date().toISOString()}] Making API request to: ${apiUrl}`);
-
-                    const response = await fetch(apiUrl);
-                    console.log(`[${new Date().toISOString()}] Received response with status: ${response.status}`);
-
-                    const data = await response.json();
-                    console.log(`[${new Date().toISOString()}] Parsed JSON data. Tree exists: ${!!data.tree}`);
-
-                    let midiCount = 0;
-                    if (data.tree) {
-                        const midiFiles = data.tree.filter(item =>
-                            item.path.endsWith('.midi') || item.path.endsWith('.mid')
-                        );
-                        midiCount = midiFiles.length;
-                        console.log(`[${new Date().toISOString()}] Found ${midiCount} MIDI files in repository`);
-
-                        // Log primeros 5 archivos MIDI encontrados (para debugging)
-                        if (midiFiles.length > 0) {
-                            console.log(`[${new Date().toISOString()}] Sample MIDI files:`,
-                                midiFiles.slice(0, 5).map(f => f.path));
-                        }
-                    } else {
-                        console.warn(`[${new Date().toISOString()}] No tree data found in API response`);
-                    }
-
-                    // Actualizar caché
-                    const cacheData = {
-                        timestamp: new Date().getTime(),
-                        count: midiCount
-                    };
-                    localStorage.setItem(`midiFileCount_${repoName}`, JSON.stringify(cacheData));
-                    console.log(`[${new Date().toISOString()}] Updated cache for ${repoName}:`, cacheData);
-
-                    // Actualizar UI con nuevos datos
-                    midiCountElement.textContent = `${midiCount} midis`;
-                    console.log(`[${new Date().toISOString()}] UI updated for ${repoName}`);
-
-                } catch (error) {
-                    console.error(`[${new Date().toISOString()}] Error refreshing repository ${repoName}:`, {
-                        error: error.message,
-                        stack: error.stack
-                    });
-
-                    const cachedData = localStorage.getItem(`midiFileCount_${repoName}`);
-                    if (cachedData) {
-                        const { count } = JSON.parse(cachedData);
-                        console.log(`[${new Date().toISOString()}] Falling back to cached data for ${repoName}: ${count} midis`);
-                        midiCountElement.textContent = `${count} midis (cached)`;
-                    } else {
-                        console.warn(`[${new Date().toISOString()}] No cached data available for ${repoName}`);
-                        midiCountElement.textContent = 'Error loading';
-                    }
-                } finally {
-                    console.log(`[${new Date().toISOString()}] Starting cooldown for ${repoName}`);
-
-                    setTimeout(() => {
-                        delete refreshCooldowns[repoName];
-                        refreshButton.disabled = false;
-                        refreshButton.textContent = 'Refresh';
-                        console.log(`[${new Date().toISOString()}] Cooldown finished for ${repoName}`);
-                    }, COOLDOWN_TIME);
-                }
             }
 
             // Función para actualizar la lista completa
