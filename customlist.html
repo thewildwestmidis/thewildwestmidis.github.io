@@ -110,12 +110,14 @@
             const cacheCustomDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
 
             // Función para actualizar el conteo de MIDIs con botón de refresh
-            async function countMidiFiles(repoName, defaultRepo = false) {
+            async function countMidiFiles(repoName, defaultRepo = false, canUseCache = true) {
                 const cacheKey = `midiFileCount_${repoName}`;
                 const cachedData = localStorage.getItem(cacheKey);
 
                 // Verificar si hay datos en caché y si aún son válidos
-                if (cachedData && !refreshCooldowns[repoName]) {
+                if (cachedData && !refreshCooldowns[repoName] && canUseCache) {
+                    console.log(`Using cache for ${repoName}`);
+
                     const cached = JSON.parse(cachedData);
                     const currentTime = new Date().getTime();
                     const cacheDuration = defaultRepo ? cacheDefaultDuration : cacheCustomDuration;
@@ -428,21 +430,6 @@
                 }
             }
 
-            // Función para contar MIDIs (solo lectura)
-            async function countMidiFiles(repoName, defaultRepo = false) {
-                const cacheKey = `midiFileCount_${repoName}`;
-                const cachedData = localStorage.getItem(cacheKey);
-                const cacheDuration = defaultRepo ? cacheDefaultDuration : cacheCustomDuration;
-
-                if (cachedData) {
-                    const { timestamp, count } = JSON.parse(cachedData);
-                    if (new Date().getTime() - timestamp < cacheDuration) {
-                        return { count, cached: true };
-                    }
-                }
-                return { count: 0, cached: false };
-            }
-
             // Función para actualizar la lista completa
             async function updateRepoList() {
                 let repos = JSON.parse(localStorage.getItem('customRepos')) || [];
@@ -500,9 +487,9 @@
                     let repos = JSON.parse(localStorage.getItem('customRepos')) || [];
 
                     // Verificar si el repositorio es válido y contiene archivos MIDI
-                    const midiCount = await countMidiFiles(repoName);
+                    const { count, cached } = await countMidiFiles(repoName, false, false);
 
-                    if (midiCount > 0) {
+                    if (count > 0) {
                         if (!repos.includes(repoName) && repoName !== DEFAULT_REPO) {
                             repos.push(repoName);
 
