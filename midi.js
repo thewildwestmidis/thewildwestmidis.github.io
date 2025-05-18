@@ -13,56 +13,166 @@ function createElementFromHTML(htmlString) {
 const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 const favoriteFileNames = new Set(favorites.map(file => file.name));
 
-async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 9999999) {
+async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 999999) {
     try {
         const defaultRepo = 'thewildwestmidis/midis';
         const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
         let allFiles = [];
 
         const cacheDefaultDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
-        const cacheCustomDuration = 1000; //* 60;
+        const cacheCustomDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
 
-        // Función para obtener archivos de un repositorio con caché
+
+
+        // Configuración de caché mejorada
+        const CACHE_CONFIG = {
+            defaultDuration: 1 * 60 * 60 * 1000, // 1 horas para datos frescos
+            fallbackDuration: 24 * 60 * 60 * 1000 // 24 horas para datos cacheados como fallback
+        };
+
+        const cache = {
+            get: (key, allowExpired = false) => {
+                const item = localStorage.getItem(key);
+                if (!item) return null;
+
+                const { value, timestamp } = JSON.parse(item);
+                const age = Date.now() - timestamp;
+
+                // Permitir datos expirados como fallback
+                if (allowExpired) {
+                    return age < CACHE_CONFIG.fallbackDuration ? value : null;
+                }
+
+                return age < CACHE_CONFIG.defaultDuration ? value : null;
+            },
+            set: (key, value) => {
+                localStorage.setItem(key, JSON.stringify({
+                    value,
+                    timestamp: Date.now()
+                }));
+            }
+        };
+
+        // Función mejorada para obtener el último commit con estrategia de fallback
+        async function getLastCommitDate(repo) {
+            const cacheKey = `lastCommit_${repo}`;
+
+            try {
+                // 1. Intentar obtener datos frescos primero
+                const cached = cache.get(cacheKey);
+                if (cached) {
+                    console.log(`[Cache] Using fresh commit date for ${repo}`);
+                    return new Date(cached);
+                }
+
+                // 2. Intentar hacer nueva petición a la API
+                console.log(`[API] Fetching commit date for ${repo}`);
+                const response = await fetch(`https://api.github.com/repos/${repo}/commits?per_page=1`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const commitDate = data[0]?.commit?.committer?.date;
+
+                if (!commitDate) throw new Error('No commit date found in response');
+
+                // Guardar en caché si la respuesta es válida
+                cache.set(cacheKey, commitDate);
+                return new Date(commitDate);
+
+            } catch (error) {
+                console.error(`[Error] Failed to get commit date for ${repo}:`, error.message);
+
+                // 3. Intentar usar caché expirada como fallback
+                const expiredCache = cache.get(cacheKey, true);
+                if (expiredCache) {
+                    console.warn(`[Fallback] Using expired cache for ${repo}`);
+                    return new Date(expiredCache);
+                }
+
+                // 4. Último recurso: fecha actual con advertencia
+                console.warn(`[Final Fallback] Using current date for ${repo}`);
+                return new Date();
+            }
+        }
+
+
+        // Función para obtener archivos de un repositorio con caché mejorada
         async function fetchRepoFiles(repo, isDefault = false) {
             const cacheKey = `repoFiles_${repo}`;
             const cachedData = localStorage.getItem(cacheKey);
 
-            // Verificar si hay datos en caché y si aún son válidos
+            // Obtener fecha del último commit
+            const lastCommitDate = await getLastCommitDate(repo);
+
+            // Verificar si hay datos en caché
             if (cachedData) {
                 const cached = JSON.parse(cachedData);
                 const currentTime = new Date().getTime();
-
-                // Usar el tiempo de caché adecuado según si el repositorio es predeterminado o no
                 const cacheDuration = isDefault ? cacheDefaultDuration : cacheCustomDuration;
 
-                if (currentTime - cached.timestamp < cacheDuration) {
+                // Si hay un commit más reciente que la caché, ignorar el tiempo de caché
+                const shouldUseCache = lastCommitDate ?
+                    new Date(cached.timestamp) > lastCommitDate &&
+                    (currentTime - cached.timestamp < cacheDuration) :
+                    (currentTime - cached.timestamp < cacheDuration);
+
+                if (shouldUseCache) {
                     console.log(`Using cache for ${repo}`);
                     return cached.files;
                 }
-                console.log(`Cache for ${repo} expired`);
+                console.log(`Cache for ${repo} expired or repo has new commits`);
             }
 
-            // Si no hay caché o está expirado, hacer la solicitud a la API
+            // Si no hay caché válida, hacer la solicitud a la API
             try {
-                console.log(`Using request for ${repo}`);
+                console.log(`Fetching fresh data for ${repo}`);
 
+                // Primero obtener todos los archivos del repositorio
                 const response = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`);
                 const data = await response.json();
-                const repoFiles = data.tree.map(item => ({
-                    ...item,
-                    name: item.path,
-                    repo: repo,
-                    formattedName: formatFileName(item.path) // Guardar el nombre formateado
-                }));
 
-                // Filtrar archivos MIDI
-                const midiFiles = repoFiles.filter(item => item.name.endsWith('.mid'));
+                if (!data.tree) {
+                    console.log(`No files found in ${repo}`);
+                    return [];
+                }
 
-                // Guardar los archivos en caché
-                localStorage.setItem(cacheKey, JSON.stringify({
+                // Procesar archivos con manejo de errores para nombres
+                const repoFiles = data.tree.map(item => {
+                    try {
+                        return {
+                            ...item,
+                            name: item.path,
+                            repo: repo,
+                            formattedName: formatFileName(item.path) // Guardar el nombre formateado
+                        };
+                    } catch (error) {
+                        console.error(`Error formatting file name for ${item.path}:`, error);
+                        return {
+                            ...item,
+                            name: item.path,
+                            repo: repo,
+                            formattedName: item.path // Usar el nombre original si falla el formateo
+                        };
+                    }
+                });
+
+                // Filtrar archivos MIDI (con múltiples extensiones)
+                const midiExtensions = ['.mid', '.midi', '.MID', '.MIDI'];
+                const midiFiles = repoFiles.filter(item =>
+                    midiExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
+                );
+
+                // Guardar los archivos en caché con timestamp actual
+                const cacheData = {
                     timestamp: new Date().getTime(),
-                    files: midiFiles
-                }));
+                    files: midiFiles,
+                    lastCommitChecked: lastCommitDate ? lastCommitDate.getTime() : null
+                };
+
+                localStorage.setItem(cacheKey, JSON.stringify(cacheData));
 
                 return midiFiles;
             } catch (error) {
@@ -71,6 +181,7 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 9999999) {
                 // En caso de error, intentar usar los archivos almacenados previamente (si hay)
                 if (cachedData) {
                     const cached = JSON.parse(cachedData);
+                    console.log(`Falling back to cached data for ${repo} due to error`);
                     return cached.files;
                 }
 
@@ -79,64 +190,160 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 9999999) {
             }
         }
 
-        // Cargar archivos de los repositorios custom primero
-        for (const repo of customRepos) {
-            if (repo !== defaultRepo) {
-                const repoFiles = await fetchRepoFiles(repo);
-                allFiles = allFiles.concat(repoFiles);
+
+
+        // Cargar archivos de todas las fuentes
+        async function loadAllFiles() {
+            let allFiles = [];
+
+            // 1. Cargar custom links primero (si existen)
+            try {
+                const customLinksText = localStorage.getItem('customLinks') || '';
+                if (customLinksText.trim()) {
+                    const customFiles = processCustomLinks(customLinksText);
+                    allFiles = allFiles.concat(customFiles);
+                    console.log(`Loaded ${customFiles.length} custom links`);
+                }
+            } catch (error) {
+                console.error('Error loading custom links:', error);
             }
+
+            // 2. Cargar repositorios custom
+            const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
+            for (const repo of customRepos) {
+                if (repo !== defaultRepo) {
+                    try {
+                        const repoFiles = await fetchRepoFiles(repo);
+                        allFiles = allFiles.concat(repoFiles);
+                        console.log(`Loaded ${repoFiles.length} files from ${repo}`);
+                    } catch (error) {
+                        console.error(`Error loading files from ${repo}:`, error);
+                    }
+                }
+            }
+
+            // 3. Cargar repositorio por defecto
+            try {
+                const defaultRepoFiles = await fetchRepoFiles(defaultRepo, true);
+                allFiles = allFiles.concat(defaultRepoFiles);
+                console.log(`Loaded ${defaultRepoFiles.length} files from default repo`);
+            } catch (error) {
+                console.error('Error loading default repo:', error);
+            }
+
+            return allFiles.filter(file => file); // Filtrar posibles valores nulos
         }
 
-        // Cargar archivos del repositorio original después (almacenado por 24 horas)
-        const defaultRepoFiles = await fetchRepoFiles(defaultRepo, true);
-        allFiles = allFiles.concat(defaultRepoFiles);
+        // Función para procesar custom links con manejo de errores
+        function processCustomLinks(text) {
+            return text.split('\n')
+                .map(line => line.trim())
+                .filter(line => line)
+                .map(line => {
+                    try {
+                        const [url, ...nameParts] = line.split('|').map(part => part.trim());
+                        if (!url) return null;
 
-        // Filtrar por término de búsqueda basado en el nombre formateado
-        let filteredFiles = allFiles;
-        if (searchTerm) {
-            const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            filteredFiles = allFiles.filter(file => file.formattedName.toLowerCase().includes(lowerCaseSearchTerm));
+                        const customName = nameParts.join('|') ||
+                            url.split('/').pop().split('.')[0] ||
+                            'Custom MIDI';
+
+                        return {
+                            name: customName,
+                            url: url,
+                            repo: 'custom',
+                            formattedName: formatFileName(customName),
+                            custom: true,
+                            path: url // Para consistencia con los otros archivos
+                        };
+                    } catch (error) {
+                        console.error(`Error processing custom link: "${line}"`, error);
+                        return null;
+                    }
+                })
+                .filter(link => link); // Filtrar entradas nulas
         }
 
-        console.log(filteredFiles);
+        // Uso completo
+        (async () => {
+            try {
+                // Cargar todos los archivos
+                let allFiles = await loadAllFiles();
+                console.log(`Total files loaded: ${allFiles.length}`);
 
-        if (searchTerm) {
-            const filteredFiles = allFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
-            displayFileList(filteredFiles, favoriteFileNames); // Pass favoriteFileNames here
-        } else {
-            displayFileList(allFiles, favoriteFileNames); // Pass favoriteFileNames here
-        }
+                // Filtrar por término de búsqueda basado en el nombre formateado
+                let filteredFiles = allFiles;
+                if (searchTerm) {
+                    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+                    filteredFiles = allFiles.filter(file => file.formattedName.toLowerCase().includes(lowerCaseSearchTerm));
+                }
+                console.log(`Total files with filtering: ${filteredFiles.length}`);
+                console.log(filteredFiles)
 
-        // Check if the selectedmidi exists in the fetched MIDI files
-        const isMidiFound = allFiles.some(file => file.name === selectedmidi);
-        if (!isMidiFound) {
-            document.body.getElementsByClassName("MidiName")[0].textContent = "Midi Not Found 404"
-            document.body.getElementsByClassName("GoBack")[0].textContent = "Go Back"
-        }
+                currentPage = page;
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = startIndex + pageSize;
+                const paginatedFiles = filteredFiles.slice(startIndex, endIndex);
+
+                // Mostrar resultados
+                displayFileList(paginatedFiles);
+
+                const totalPages = Math.ceil(filteredFiles.length / pageSize);
+                //generatePagination(totalPages, currentPage, searchTerm);
+
+                // Check if the selectedmidi exists in the fetched MIDI files
+                const isMidiFound = allFiles.some(file => file.name === selectedmidi);
+                if (!isMidiFound) {
+                    document.body.getElementsByClassName("MidiName")[0].textContent = "Midi Not Found 404"
+                    document.body.getElementsByClassName("GoBack")[0].textContent = "Go Back"
+                }
+            } catch (error) {
+                console.error('Error in main process:', error);
+                console.error('Failed to load files. Please try again later.');
+            }
+        })();
     } catch (error) {
         console.error('Error fetching MIDI files:', error);
     }
 }
+function formatFileName(filePath) {
+    try {
+        const knownExtensions = ['mid', 'MID', 'midi', 'MIDI'];
 
+        // Obtener solo el nombre del archivo (sin ruta)
+        let fileName = filePath.split('/').pop();
 
+        // Detectar y quitar la extensión (solo si es una conocida)
+        const match = fileName.match(/\.(\w+)$/); // Busca la última extensión
+        if (match && knownExtensions.includes(match[1].toLowerCase())) {
+            fileName = fileName.slice(0, -match[0].length); // Quita ".ext"
+        }
 
-function formatFileName(text) {
-    // Reemplazar "_" por espacio
-    text = text.replace(/_/g, ' ');
+        // Reemplazar guiones bajos y guiones por espacios
+        fileName = fileName.replace(/[_-]/g, ' ');
 
-    // Eliminar "-" si hay texto a ambos lados
-    text = text.replace(/([^ ])-([^ ])/g, '$1 $2');
+        // Capitalizar palabras (solo letras latinas)
+        fileName = fileName
+            .split(' ')
+            .map(word =>
+                /^[a-zA-Z]/.test(word)
+                    ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                    : word
+            )
+            .join(' ');
 
-    // Eliminar ".mid"
-    text = text.replace(/\.mid/g, '');
-
-    return text;
+        return fileName;
+    } catch (error) {
+        console.error(`Error formatting filename ${filePath}:`, error);
+        return filePath;
+    }
 }
+
 
 async function displayFileList(files) {
 
-        // Cargar el objeto de duraciones de MIDIs desde localStorage
-        let midiDurations = JSON.parse(localStorage.getItem('midiDurations')) || {};
+    // Cargar el objeto de duraciones de MIDIs desde localStorage
+    let midiDurations = JSON.parse(localStorage.getItem('midiDurations')) || {};
 
     fileListContainer.innerHTML = '';
 
@@ -148,23 +355,37 @@ async function displayFileList(files) {
     const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
     const isOriginalOnly = customRepos.length <= 1;
 
-    const durationPromises = files.map(async file => {
+    for (const file of files) {
         const isFavorite = favoriteFileNames.has(file.name);
         const midiNameUrl = encodeURI(file.name);
 
         if (selectedmidi.includes(file.name)) {
-            filerepo = file.repo
             const listItem = document.createElement('li');
             const isFavorite = favoriteFileNames.has(file.name);
-            const repoName = file.repo === 'thewildwestmidis/midis' ? 'thewildwestmidis/midis' : file.repo;
+
+            // Determinar la fuente del archivo
+            const isCustomLink = file.custom;
+            const isDefaultRepo = file.repo === 'thewildwestmidis/midis';
+            const repoName = isCustomLink ? 'Custom Link' : file.repo;
+
+            // Construir la URL del MIDI según su tipo
+            let midiUrl;
+            if (isCustomLink) {
+                midiUrl = file.url; // Usar la URL directa para custom links
+            } else if (isOriginalOnly && isDefaultRepo) {
+                midiUrl = `https://thewildwestmidis.github.io/midis/${midiNameUrl}`;
+            } else {
+                midiUrl = `https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`;
+            }
 
             listItem.innerHTML = `
             <div class="divmidiinfo">
                 <p class="midiname">${formatFileName(file.name)}</p>
                 <p class="duration"></p>
             </div>
-            <button class="copy-button" data-url="https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}">Copy Midi Data</button>
-            <button class="${isFavorite ? 'remove-favorite-button' : 'favorite-button'}" data-file='${JSON.stringify(file)}'>
+            <button class="copy-button" data-url="${midiUrl}">Copy Midi Data</button>
+            <button class="${isFavorite ? 'remove-favorite-button' : 'favorite-button'}" 
+                    data-file='${JSON.stringify(file)}'>
                 ${isFavorite ? 'Unfavorite' : 'Favorite'}
             </button>
         `;
@@ -172,7 +393,7 @@ async function displayFileList(files) {
             fileListContainer.appendChild(listItem);
 
             //Midi player
-            const BaseUrl = "https://raw.githubusercontent.com/" + file.repo + "/main/" + midiNameUrl
+            const BaseUrl = midiUrl
 
             const midiplayer = document.getElementById("midiplayersection").getElementsByClassName("MidPlayer")[0]
             const midivisualizer = document.getElementById("midiplayersection").getElementsByClassName("MidVisualizer")[0]
@@ -182,47 +403,53 @@ async function displayFileList(files) {
             midivisualizer.setAttribute("src", BaseUrl);
             document.getElementById("midiplayersection").appendChild(midiplayer);
             document.getElementById("midiplayersection").appendChild(midivisualizer);
+
+
+            // Función para cargar y mostrar la duración
             async function LoadMidiDuration() {
-                // Cargar y mostrar la duración
                 try {
                     const savedDuration = midiDurations[file.name];
                     if (!savedDuration) {
                         // Cargar la duración del MIDI si no está en el localStorage
-                        let midi
-    
-                        if (isOriginalOnly) {
-                            midi = await Midi.fromUrl("https://thewildwestmidis.github.io/midis/" + midiNameUrl);
-                        } else {
-                            midi = await Midi.fromUrl(`https://raw.githubusercontent.com/${file.repo}/main/${midiNameUrl}`);
-                        }
-                        const durationInSeconds = midi.duration;
-                        const minutes = Math.floor(durationInSeconds / 60);
-                        const seconds = Math.round(durationInSeconds % 60);
-                        const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
-    
-                        // Actualizar el objeto midiDurations
-                        midiDurations[file.name] = durationText;
-                        localStorage.setItem('midiDurations', JSON.stringify(midiDurations));
-    
-                        // Actualizar el texto de la duración en el DOM
-                        const durationDiv = listItem.querySelector('.duration');
-                        if (durationDiv) {
-                            durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${durationText}`;
+                        let midi;
+
+                        try {
+                            midi = await Midi.fromUrl(midiUrl);
+                            const durationInSeconds = midi.duration;
+                            const minutes = Math.floor(durationInSeconds / 60);
+                            const seconds = Math.round(durationInSeconds % 60);
+                            const durationText = `${minutes} min, ${seconds < 10 ? '0' : ''}${seconds} sec`;
+
+                            // Actualizar el almacenamiento local
+                            midiDurations[file.name] = durationText;
+                            localStorage.setItem('midiDurations', JSON.stringify(midiDurations));
+
+                            // Actualizar el DOM
+                            const durationDiv = listItem.querySelector('.duration');
+                            if (durationDiv) {
+                                durationDiv.textContent = `${!isOriginalOnly || !isDefaultRepo ? repoName + ' - ' : ''}${durationText}`;
+                            }
+                        } catch (loadError) {
+                            console.warn('Cannot load duration of midi:', file.name, ' - ', loadError);
+                            const durationDiv = listItem.querySelector('.duration');
+                            if (durationDiv) {
+                                durationDiv.textContent = `${!isOriginalOnly || !isDefaultRepo ? repoName + ' - ' : ''}Failed to load duration`;
+                            }
                         }
                     } else {
-                        // Si la duración ya está en localStorage, actualizar directamente
+                        // Si la duración ya está en localStorage
                         const durationDiv = listItem.querySelector('.duration');
                         if (durationDiv) {
-                            durationDiv.textContent = `${!isOriginalOnly || repoName !== 'thewildwestmidis/midis' ? repoName + ' - ' : ''}${savedDuration}`;
+                            durationDiv.textContent = `${!isOriginalOnly || !isDefaultRepo ? repoName + ' - ' : ''}${savedDuration}`;
                         }
                     }
                 } catch (error) {
-                    console.warn('Cannot load duration of midi:', file.name, ' - ', error);
+                    console.error('Error in duration loading process:', error);
                 }
             }
-    
-    
-    
+
+
+
             setTimeout(() => {
                 LoadMidiDuration();
             }, 10); //Works as "Run in background"
@@ -231,7 +458,7 @@ async function displayFileList(files) {
             document.title = 'The Wild West Midis - Midi: ' + formatFileName(file.name)
             document.querySelector('meta[property="og:title"]').content = 'The Wild West Midis - Midi: ' + formatFileName(file.name)
         };
-    });
+    };
 
     const copyButtons = document.querySelectorAll('.copy-button');
     copyButtons.forEach(button => {

@@ -99,7 +99,8 @@ a {
     margin-bottom: 7px;
 }
 
-#pagination button, #pagination input {
+#pagination button,
+#pagination input {
     padding: 7.5px 15px;
     background-color: #4f5155d0;
     color: rgb(255, 255, 255);
@@ -110,7 +111,7 @@ a {
 }
 
 #pagination input {
-    width:20px;
+    width: 20px;
     cursor: text;
     text-align: center;
 }
@@ -450,14 +451,17 @@ a {
     right: 0;
     bottom: 0;
     margin: auto;
-    background-size: cover; /* Ajustar el tamaño de la imagen de fondo */
+    background-size: cover;
+    /* Ajustar el tamaño de la imagen de fondo */
     display: block;
     margin-left: auto;
     margin-right: auto;
     width: 100%;
     height: 100%;
-    filter: blur(5px); /* Aplicar un desenfoque de 5px */
-    z-index: -1; /* Establecer el índice z detrás del contenido principal */
+    filter: blur(5px);
+    /* Aplicar un desenfoque de 5px */
+    z-index: -1;
+    /* Establecer el índice z detrás del contenido principal */
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -483,7 +487,7 @@ button#submit {
 }
 
 /* Agrega estilos a los resultados de búsqueda */
-#repo-list > li {
+#repo-list>li {
     margin: 10px;
     padding: 15px;
     border-radius: 20px;
@@ -497,7 +501,7 @@ button#submit {
     justify-content: space-between;
 }
 
-.remove-button {
+.remove-button, .refresh-button {
     padding: 5px 10px;
     background-color: #c449498a;
     color: white;
@@ -509,4 +513,62 @@ button#submit {
 
 .remove-button:hover {
     background-color: #772d2d;
+}
+
+.refresh-button {
+    background-color: #666262;
+
+}
+.refresh-button:hover {
+        background-color: #77756c;
+
+}
+
+
+#success-message,
+#error-message {
+    margin: 0px;
+    margin-top: -40px;
+    position: fixed;
+    left: 50%;
+    transform: translate(-50%, 0);
+
+    border-radius: 20px;
+    background-color: #424549d5;
+    border: 3px solid #51555877;
+    padding: 2px 7px;
+}
+
+#links-saved-message {
+    margin: 0px;
+    margin-top: -30px;
+    position: fixed;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+#repo-form {
+    margin-bottom: 50px;
+}
+
+.repo-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.refresh-time {
+    color: #888;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.refresh-button {
+    padding: 3px 8px;
+    font-size: 0.9em;
+}
+
+.remove-button {
+    padding: 3px 8px;
+    font-size: 0.9em;
 }

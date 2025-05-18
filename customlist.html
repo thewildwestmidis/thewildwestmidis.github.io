@@ -59,11 +59,11 @@
     <center>
         <h1>Manage Custom MIDI Repositories</h1>
 
-        <form id="repo-form" style="margin-bottom: 20px;">
+        <form id="repo-form">
             <input type="text" id="repo-url" placeholder="Enter GitHub repo URL or user/repo" required>
             <button type="submit" id="submit">Add Repository</button>
         </form>
-        <p id="success-message" style="display:none; color: green;">Repository added successfully!</p>
+        <p id="success-message" style="display:none; color: rgb(0, 255, 0);">Repository added successfully!</p>
         <p id="error-message" style="display:none; color: red;">Repository already exists!</p>
     </center>
 
@@ -75,6 +75,16 @@
             <!-- List of repos will be dynamically generated here -->
         </ul>
     </div>
+
+    <div id="file-list-container">
+        <center>
+            <h2>Custom MIDI Links</h2>
+            <textarea id="custom-links" placeholder="Enter one MIDI URL per line. Optional format: URL | Custom Name"
+                style="width: 500px; height: 150px"></textarea>
+            <p id="links-saved-message" style="display:none; color: rgb(0, 252, 0);">Links saved successfully!</p>
+        </center>
+    </div>
+
     <br><br>
 
     <center>
@@ -90,79 +100,160 @@
 
 
     <script src="background.js"></script>
-    <script>document.addEventListener('DOMContentLoaded', () => {
-            const repoForm = document.getElementById('repo-form');
-            const successMessage = document.getElementById('success-message');
-            const errorMessage = document.getElementById('error-message');
-            const repoList = document.getElementById('repo-list');
-
-            const DEFAULT_REPO = 'thewildwestmidis/midis'; // Repositorio por defecto
-
-            function getRepoName(url) {
-                const match = url.match(/github\.com\/([^\/]+\/[^\/]+)/);
-                return match ? match[1] : url;
-            }
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Añade esto al principio del script
+            const refreshCooldowns = {}; // Para llevar el control de los cooldowns
+            const COOLDOWN_TIME = 10000; // 10 segundos
 
             const cacheDefaultDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
-            const cacheCustomDuration = 1000; //* 60;
+            const cacheCustomDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
 
-            // Función para contar los archivos MIDI de un repositorio con caché
+            // Función para actualizar el conteo de MIDIs con botón de refresh
             async function countMidiFiles(repoName, defaultRepo = false) {
                 const cacheKey = `midiFileCount_${repoName}`;
                 const cachedData = localStorage.getItem(cacheKey);
 
                 // Verificar si hay datos en caché y si aún son válidos
-                if (cachedData) {
+                if (cachedData && !refreshCooldowns[repoName]) {
                     const cached = JSON.parse(cachedData);
                     const currentTime = new Date().getTime();
-
-                    // Usar el tiempo de caché adecuado según si el repositorio es predeterminado o no
                     const cacheDuration = defaultRepo ? cacheDefaultDuration : cacheCustomDuration;
 
                     if (currentTime - cached.timestamp < cacheDuration) {
                         console.log(`Using cache for ${repoName}`);
-                        return cached.count;
+                        return { count: cached.count, cached: true };
                     }
                 }
 
                 // Si no hay caché o está expirado, hacer la solicitud a la API
                 try {
                     console.log(`Using request for ${repoName}`);
+                    refreshCooldowns[repoName] = true; // Activar cooldown
+                    setTimeout(() => {
+                        delete refreshCooldowns[repoName]; // Eliminar cooldown después de 10 segundos
+                    }, COOLDOWN_TIME);
 
                     const response = await fetch(`https://api.github.com/repos/${repoName}/git/trees/main?recursive=1`);
                     const data = await response.json();
-                    if (!data.tree) return 0; // Si no hay árbol de archivos, devolver 0
+                    if (!data.tree) return { count: 0, cached: false };
 
-                    // Filtrar archivos .midi o .mid
                     const midiFiles = data.tree.filter(item => item.path.endsWith('.midi') || item.path.endsWith('.mid'));
-
-                    // Guardar el conteo en caché
                     const count = midiFiles.length;
                     const currentTime = new Date().getTime();
+
                     localStorage.setItem(cacheKey, JSON.stringify({
                         timestamp: currentTime,
                         count: count
                     }));
 
-                    return count;
+                    return { count, cached: false };
                 } catch (error) {
                     console.error('Error fetching MIDI files:', error);
-
-                    // En caso de error, intentar usar los datos almacenados previamente (si hay)
                     if (cachedData) {
                         const cached = JSON.parse(cachedData);
-                        return cached.count;
+                        return { count: cached.count, cached: true };
                     }
-
-                    // Si no hay caché y ocurrió un error, retornar 0
-                    return 0;
+                    return { count: 0, cached: false };
                 }
             }
 
+            // Función para refrescar un repositorio específico
+            async function refreshRepository(repoName, listItem, isDefaultRepo = false) {
+                if (refreshCooldowns[repoName]) return;
+
+                refreshCooldowns[repoName] = true;
+                const refreshButton = listItem.querySelector('.refresh-button');
+                const midiCountElement = listItem.querySelector('.duration');
+
+                // Actualizar UI durante el refresh
+                refreshButton.disabled = true;
+                refreshButton.textContent = 'Refreshing...';
+                midiCountElement.textContent = 'Updating...';
+
+                try {
+                    console.group(`[Refresh Repository] Starting refresh for: ${repoName}`);
+                    console.log(`[API Request] Fetching from: https://api.github.com/repos/${repoName}/git/trees/main?recursive=1`);
+
+                    const apiStartTime = performance.now();
+                    const response = await fetch(`https://api.github.com/repos/${repoName}/git/trees/main?recursive=1`);
+                    const apiDuration = performance.now() - apiStartTime;
+
+                    console.log(`[API Response] Received in ${apiDuration.toFixed(2)}ms. Status: ${response.status}`);
+
+                    const parseStartTime = performance.now();
+                    const data = await response.json();
+                    const parseDuration = performance.now() - parseStartTime;
+
+                    console.log(`[Data Parsing] Completed in ${parseDuration.toFixed(2)}ms`);
+                    console.debug('[API Data]', data);
+
+                    let midiCount = 0;
+                    if (data.tree) {
+                        const filterStartTime = performance.now();
+                        const midiFiles = data.tree.filter(item =>
+                            item.path.endsWith('.midi') || item.path.endsWith('.mid')
+                        );
+                        midiCount = midiFiles.length;
+                        const filterDuration = performance.now() - filterStartTime;
+
+                        console.log(`[MIDI Detection] Found ${midiCount} MIDI files (${filterDuration.toFixed(2)}ms)`);
+                        if (midiCount > 0) {
+                            console.log('[Sample Files]', midiFiles.slice(0, 3).map(f => f.path));
+                        }
+                    } else {
+                        console.warn('[Data Structure] No tree property found in response');
+                    }
+
+                    // Cache update
+                    const cacheData = {
+                        timestamp: new Date().getTime(),
+                        count: midiCount,
+                        source: 'api'
+                    };
+                    localStorage.setItem(`midiFileCount_${repoName}`, JSON.stringify(cacheData));
+                    console.log('[Cache Update]', cacheData);
+
+                    // UI update
+                    midiCountElement.textContent = `${midiCount} midis`;
+                    console.log(`[UI Updated] Displaying ${midiCount} midis`);
+
+                } catch (error) {
+                    console.groupCollapsed(`[Error] Refresh failed for ${repoName}`);
+                    console.error('Error Details:', error);
+                    console.log('Error Type:', error.name);
+                    console.log('Error Message:', error.message);
+                    if (error.response) {
+                        console.log('Response Status:', error.response.status);
+                    }
+
+                    const cachedData = localStorage.getItem(`midiFileCount_${repoName}`);
+                    if (cachedData) {
+                        const { count, timestamp, source } = JSON.parse(cachedData);
+                        console.log(`[Fallback] Using cached data (${new Date(timestamp).toISOString()}, source: ${source || 'unknown'})`);
+                        midiCountElement.textContent = `${count} midis`;
+                    } else {
+                        console.warn('[Fallback] No cached data available');
+                        midiCountElement.textContent = 'Error loading';
+                    }
+                    console.groupEnd();
+
+                } finally {
+                    console.log(`[Cooldown] Starting ${COOLDOWN_TIME}ms cooldown for ${repoName}`);
+                    setTimeout(() => {
+                        delete refreshCooldowns[repoName];
+                        refreshButton.disabled = false;
+                        refreshButton.textContent = 'Refresh';
+                        console.log(`[Cooldown Complete] ${repoName} can be refreshed again`);
+                    }, COOLDOWN_TIME);
+
+                    console.groupEnd();
+                }
+            }
+            // Modifica la función updateRepoList para incluir el botón de refresh
             async function updateRepoList() {
                 let repos = JSON.parse(localStorage.getItem('customRepos')) || [];
 
-                // Asegúrate de que el repositorio por defecto siempre esté presente
                 if (!repos.includes(DEFAULT_REPO)) {
                     repos.push(DEFAULT_REPO);
                     localStorage.setItem('customRepos', JSON.stringify(repos));
@@ -177,37 +268,226 @@
                         const listItem = document.createElement('li');
                         listItem.className = 'file-list-item';
 
-                        // Contar archivos MIDI
-                        let defaultRepo = false
-                        if (repo === "thewildwestmidis/midis") { defaultRepo = true }
-
-                        const midiCount = await countMidiFiles(repo, defaultRepo);
+                        let defaultRepo = (repo === DEFAULT_REPO);
+                        const { count: midiCount, cached } = await countMidiFiles(repo, defaultRepo);
 
                         listItem.innerHTML = `
-                        <div class="divmidiinfo">
-                            <p class="midiname">${repo}</p>
-                            <p class="duration">${midiCount} midis</p>
-                        </div>
-                        ${repo !== DEFAULT_REPO ? '<button class="remove-button">Remove</button>' : ''}
-                    `;
+                <div class="divmidiinfo">
+                    <p class="midiname">${repo}</p>
+                    <p class="duration">${midiCount} midis ${cached ? '' : ''}</p>
+                </div>
+                <div>
+                    ${repo !== DEFAULT_REPO ? '<button class="remove-button">Remove</button>' : ''}
+                    <button class="refresh-button" ${refreshCooldowns[repo] ? 'disabled' : ''}>
+                        ${refreshCooldowns[repo] ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                </div>
+            `;
 
                         const removeButton = listItem.querySelector('.remove-button');
                         if (removeButton) {
                             removeButton.addEventListener('click', () => {
                                 const updatedRepos = repos.filter(r => r !== repo);
-
-                                gtag('event', 'remove_repository_' + repo, {
-                                    event_category: 'Repository',
-                                    value: 1
-                                });
-
                                 localStorage.setItem('customRepos', JSON.stringify(updatedRepos));
                                 updateRepoList();
                             });
                         }
 
+                        const refreshButton = listItem.querySelector('.refresh-button');
+                        if (refreshButton) {
+                            refreshButton.addEventListener('click', async () => {
+                                if (!refreshCooldowns[repo]) {
+                                    await countMidiFiles(repo, defaultRepo);
+                                    updateRepoList();
+                                }
+                            });
+                        }
+
                         repoList.appendChild(listItem);
                     }
+                }
+            }
+
+            // Añade esto al final del event listener DOMContentLoaded
+            // Manejo de custom links
+            const customLinksTextarea = document.getElementById('custom-links');
+            const linksSavedMessage = document.getElementById('links-saved-message');
+            let saveLinksTimeout;
+
+            // Cargar links existentes
+            const savedLinks = localStorage.getItem('customLinks');
+            if (savedLinks) {
+                customLinksTextarea.value = savedLinks;
+            }
+
+            // Guardar automáticamente cuando hay cambios
+            customLinksTextarea.addEventListener('input', () => {
+                clearTimeout(saveLinksTimeout);
+                saveLinksTimeout = setTimeout(() => {
+                    localStorage.setItem('customLinks', customLinksTextarea.value);
+                    /*linksSavedMessage.style.display = 'block';
+                    setTimeout(() => {
+                        linksSavedMessage.style.display = 'none';
+                    }, 1000);*/
+                }, 500);
+            });
+
+
+
+
+            const repoForm = document.getElementById('repo-form');
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+            const repoList = document.getElementById('repo-list');
+
+            const DEFAULT_REPO = 'thewildwestmidis/midis'; // Repositorio por defecto
+
+            function getRepoName(url) {
+                const match = url.match(/github\.com\/([^\/]+\/[^\/]+)/);
+                return match ? match[1] : url;
+            }
+
+            // Función para refrescar un repositorio específico
+            async function refreshRepository(repoName, listItem, isDefaultRepo = false) {
+                if (refreshCooldowns[repoName]) return;
+
+                refreshCooldowns[repoName] = true;
+                const refreshButton = listItem.querySelector('.refresh-button');
+                const midiCountElement = listItem.querySelector('.duration');
+
+                // Actualizar UI durante el refresh
+                refreshButton.disabled = true;
+                refreshButton.textContent = 'Refreshing...';
+                midiCountElement.textContent = 'Updating...';
+
+                try {
+                    console.log(`[${new Date().toISOString()}] Starting refresh for repository: ${repoName}`);
+
+                    const apiUrl = `https://api.github.com/repos/${repoName}/git/trees/main?recursive=1`;
+                    console.log(`[${new Date().toISOString()}] Making API request to: ${apiUrl}`);
+
+                    const response = await fetch(apiUrl);
+                    console.log(`[${new Date().toISOString()}] Received response with status: ${response.status}`);
+
+                    const data = await response.json();
+                    console.log(`[${new Date().toISOString()}] Parsed JSON data. Tree exists: ${!!data.tree}`);
+
+                    let midiCount = 0;
+                    if (data.tree) {
+                        const midiFiles = data.tree.filter(item =>
+                            item.path.endsWith('.midi') || item.path.endsWith('.mid')
+                        );
+                        midiCount = midiFiles.length;
+                        console.log(`[${new Date().toISOString()}] Found ${midiCount} MIDI files in repository`);
+
+                        // Log primeros 5 archivos MIDI encontrados (para debugging)
+                        if (midiFiles.length > 0) {
+                            console.log(`[${new Date().toISOString()}] Sample MIDI files:`,
+                                midiFiles.slice(0, 5).map(f => f.path));
+                        }
+                    } else {
+                        console.warn(`[${new Date().toISOString()}] No tree data found in API response`);
+                    }
+
+                    // Actualizar caché
+                    const cacheData = {
+                        timestamp: new Date().getTime(),
+                        count: midiCount
+                    };
+                    localStorage.setItem(`midiFileCount_${repoName}`, JSON.stringify(cacheData));
+                    console.log(`[${new Date().toISOString()}] Updated cache for ${repoName}:`, cacheData);
+
+                    // Actualizar UI con nuevos datos
+                    midiCountElement.textContent = `${midiCount} midis`;
+                    console.log(`[${new Date().toISOString()}] UI updated for ${repoName}`);
+
+                } catch (error) {
+                    console.error(`[${new Date().toISOString()}] Error refreshing repository ${repoName}:`, {
+                        error: error.message,
+                        stack: error.stack
+                    });
+
+                    const cachedData = localStorage.getItem(`midiFileCount_${repoName}`);
+                    if (cachedData) {
+                        const { count } = JSON.parse(cachedData);
+                        console.log(`[${new Date().toISOString()}] Falling back to cached data for ${repoName}: ${count} midis`);
+                        midiCountElement.textContent = `${count} midis (cached)`;
+                    } else {
+                        console.warn(`[${new Date().toISOString()}] No cached data available for ${repoName}`);
+                        midiCountElement.textContent = 'Error loading';
+                    }
+                } finally {
+                    console.log(`[${new Date().toISOString()}] Starting cooldown for ${repoName}`);
+
+                    setTimeout(() => {
+                        delete refreshCooldowns[repoName];
+                        refreshButton.disabled = false;
+                        refreshButton.textContent = 'Refresh';
+                        console.log(`[${new Date().toISOString()}] Cooldown finished for ${repoName}`);
+                    }, COOLDOWN_TIME);
+                }
+            }
+
+            // Función para contar MIDIs (solo lectura)
+            async function countMidiFiles(repoName, defaultRepo = false) {
+                const cacheKey = `midiFileCount_${repoName}`;
+                const cachedData = localStorage.getItem(cacheKey);
+                const cacheDuration = defaultRepo ? cacheDefaultDuration : cacheCustomDuration;
+
+                if (cachedData) {
+                    const { timestamp, count } = JSON.parse(cachedData);
+                    if (new Date().getTime() - timestamp < cacheDuration) {
+                        return { count, cached: true };
+                    }
+                }
+                return { count: 0, cached: false };
+            }
+
+            // Función para actualizar la lista completa
+            async function updateRepoList() {
+                let repos = JSON.parse(localStorage.getItem('customRepos')) || [];
+                if (!repos.includes(DEFAULT_REPO)) {
+                    repos.push(DEFAULT_REPO);
+                    localStorage.setItem('customRepos', JSON.stringify(repos));
+                }
+
+                repoList.innerHTML = repos.length === 0
+                    ? '<p style="text-align: center;">No custom repositories added yet.</p>'
+                    : '';
+
+                for (const repo of repos) {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'file-list-item';
+                    const isDefaultRepo = repo === DEFAULT_REPO;
+                    const { count, cached } = await countMidiFiles(repo, isDefaultRepo);
+
+                    listItem.innerHTML = `
+                <div class="divmidiinfo">
+                    <p class="midiname">${repo}</p>
+                    <p class="duration">${count} midis${cached ? '' : ''}</p>
+                </div>
+                <div>
+                    ${!isDefaultRepo ? '<button class="remove-button">Remove</button>' : ''}
+                    <button class="refresh-button" ${refreshCooldowns[repo] ? 'disabled' : ''}>
+                        ${refreshCooldowns[repo] ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                </div>
+            `;
+
+                    // Configurar eventos
+                    const removeButton = listItem.querySelector('.remove-button');
+                    if (removeButton) {
+                        removeButton.addEventListener('click', () => {
+                            repos = repos.filter(r => r !== repo);
+                            localStorage.setItem('customRepos', JSON.stringify(repos));
+                            updateRepoList();
+                        });
+                    }
+
+                    const refreshButton = listItem.querySelector('.refresh-button');
+                    refreshButton.addEventListener('click', () => refreshRepository(repo, listItem, isDefaultRepo));
+
+                    repoList.appendChild(listItem);
                 }
             }
 
