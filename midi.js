@@ -19,8 +19,8 @@ async function fetchMidiFiles(searchTerm = '', page = 1, pageSize = 999999) {
         const customRepos = JSON.parse(localStorage.getItem('customRepos')) || [];
         let allFiles = [];
 
-        const cacheDefaultDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
-        const cacheCustomDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+        const cacheDefaultDuration = 30 * 24 * 60 * 60 * 1000; // 1 mes en milisegundos
+        const cacheCustomDuration = 7 * 24 * 60 * 60 * 1000; // 1 semana en milisegundos
 
 
 
